@@ -555,6 +555,7 @@
 
 </div>
 
+<script src="api.js"></script>
 <script>
     const container = document.getElementById('container');
     document.getElementById('signUp').addEventListener('click', () => container.classList.add('right-panel-active'));
@@ -570,17 +571,76 @@
         });
     });
 
-    // Sign in: route based on active role tab
-    document.getElementById('btn-signin').addEventListener('click', () => {
-        const signInForm = document.querySelector('.sign-in-container');
-        const activeTab  = signInForm.querySelector('.role-tab.active');
-        const role       = activeTab ? activeTab.textContent.trim().toLowerCase() : 'student';
+    // Get form elements
+    const signInForm = document.querySelector('.sign-in-container form');
+    const signUpForm = document.querySelector('.sign-up-container form');
 
-        if (role === 'admin') {
-            transitionTo('Admin_Portal.html');
-        } else {
-            transitionTo('PreExam_Dashboard.html');
+    // Sign in handler
+    signInForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const email = signInForm.querySelector('input[type="email"]').value.trim();
+        const password = signInForm.querySelector('input[type="password"]').value;
+        const role = signInForm.querySelector('.role-tab.active').textContent.trim().toLowerCase();
+
+        if (!email || !password) {
+            alert('Please fill in all fields');
+            return;
         }
+
+        try {
+            await loginUser(email, password, role);
+
+            // Route to appropriate dashboard
+            if (role === 'admin') {
+                transitionTo('Admin_Portal.html');
+            } else {
+                transitionTo('PreExam_Dashboard.html');
+            }
+        } catch (error) {
+            alert('Login failed: ' + error.message);
+            console.error('Login error:', error);
+        }
+    });
+
+    // Sign up handler
+    signUpForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const fullName = signUpForm.querySelector('input[type="text"]').value.trim();
+        const email = signUpForm.querySelector('input[type="email"]').value.trim();
+        const password = signUpForm.querySelector('input[type="password"]').value;
+        const role = signUpForm.querySelector('.role-tab.active').textContent.trim().toLowerCase();
+
+        if (!fullName || !email || !password) {
+            alert('Please fill in all fields');
+            return;
+        }
+
+        if (password.length < 8) {
+            alert('Password must be at least 8 characters');
+            return;
+        }
+
+        try {
+            await registerUser(email, fullName, password, role);
+
+            // Route to appropriate dashboard
+            if (role === 'admin') {
+                transitionTo('Admin_Portal.html');
+            } else {
+                transitionTo('PreExam_Dashboard.html');
+            }
+        } catch (error) {
+            alert('Registration failed: ' + error.message);
+            console.error('Registration error:', error);
+        }
+    });
+
+    // Role-based routing for signin button (fallback)
+    document.getElementById('btn-signin').addEventListener('click', (e) => {
+        e.preventDefault();
+        signInForm.dispatchEvent(new Event('submit'));
     });
 </script>
 

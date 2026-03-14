@@ -2,7 +2,11 @@ import tempfile
 import os
 import json
 
-from fastapi import FastAPI, Request, UploadFile, File, HTTPException
+# Load environment variables BEFORE any auth/config imports
+from dotenv import load_dotenv
+load_dotenv()
+
+from fastapi import FastAPI, Request, UploadFile, File, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -17,6 +21,9 @@ from core.ingestion.question_cleaner import clean_questions, clean_analyzed_ques
 from core.transform.unit_builder import build_units
 from core.transform.transform_runner import run_transformation, score_all_units, transform_all_units
 from core.output.exam_reconstructor import reconstruct_exam
+from core.database import init_db, User
+from api.auth import router as auth_router
+from api.dependencies import get_current_user
 
 
 app = FastAPI(
@@ -25,12 +32,21 @@ app = FastAPI(
     version="1.0"
 )
 
+# Initialize database
+init_db()
+
+# Configure CORS
+cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:8000").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=cors_origins,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
+    allow_credentials=True,
 )
+
+# Include auth routes
+app.include_router(auth_router, prefix="/auth", tags=["authentication"])
 
 
 # -----------------------------
@@ -68,8 +84,8 @@ def health_check():
 # -----------------------------
 
 @app.post("/v1/analyze")
-async def analyze_endpoint(req: TextRequest, request: Request):
-    print("Analyze request received from:", request.client.host)
+async def analyze_endpoint(req: TextRequest, request: Request, current_user: User = Depends(get_current_user)):
+    print(f"Analyze request received from {current_user.email} ({request.client.host})")
     return compute_complexity(req.text)
 
 
@@ -78,8 +94,8 @@ async def analyze_endpoint(req: TextRequest, request: Request):
 # -----------------------------
 
 @app.post("/v1/transform")
-async def transform_endpoint(req: TextRequest, request: Request):
-    print("Transform request received from:", request.client.host)
+async def transform_endpoint(req: TextRequest, request: Request, current_user: User = Depends(get_current_user)):
+    print(f"Transform request received from {current_user.email} ({request.client.host})")
     return transform_text(req.text)
 
 
@@ -88,9 +104,9 @@ async def transform_endpoint(req: TextRequest, request: Request):
 # -----------------------------
 
 @app.post("/v1/transform-batch")
-async def transform_batch(req: BatchRequest, request: Request):
+async def transform_batch(req: BatchRequest, request: Request, current_user: User = Depends(get_current_user)):
 
-    print("Batch transform request from:", request.client.host)
+    print(f"Batch transform request from {current_user.email} ({request.client.host})")
 
     results = []
     modified_count = 0
@@ -126,9 +142,9 @@ async def transform_batch(req: BatchRequest, request: Request):
 # -----------------------------
 
 @app.post("/v1/process-pdf")
-async def process_pdf(request: Request, file: UploadFile = File(...)):
+async def process_pdf(request: Request, file: UploadFile = File(...), current_user: User = Depends(get_current_user)):
 
-    print("PDF process request from:", request.client.host)
+    print(f"PDF process request from {current_user.email} ({request.client.host})")
 
     if not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="File must be a PDF")
@@ -228,9 +244,9 @@ def _sse(event: str, data: dict) -> str:
 
 
 @app.post("/v1/process-pdf-stream")
-async def process_pdf_stream(request: Request, file: UploadFile = File(...)):
+async def process_pdf_stream(request: Request, file: UploadFile = File(...), current_user: User = Depends(get_current_user)):
 
-    print("PDF stream request from:", request.client.host)
+    print(f"PDF stream request from {current_user.email} ({request.client.host})")
 
     if not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="File must be a PDF")
