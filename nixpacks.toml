@@ -1,0 +1,16 @@
+[variables]
+NIXPACKS_PYTHON_VERSION = "3.11"
+
+[phases.setup]
+nixPkgs = ["python311", "gcc"]
+
+[phases.install]
+cmds = [
+  "pip install --upgrade pip",
+  "pip install -r requirements.txt",
+  "python -m spacy download en_core_web_md",
+  "python -c \"import nltk; nltk.download('wordnet')\""
+]
+
+[start]
+cmd = "gunicorn api.app:app -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:${PORT:-8000} --timeout 120"
