@@ -30,4 +30,7 @@ Thumbs.db
 debug_*.py
 
 # Sample files
-sample_exam.pdf-e "\n.env\nlexora.db" 
+sample_exam.pdf
+
+# Database
+lexora.db
