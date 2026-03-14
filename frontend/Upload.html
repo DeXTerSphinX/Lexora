@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>LEXORA — Upload Exam</title>
+
+    <link rel="stylesheet" href="transitions.css"/>
+    <script defer src="transitions.js"></script>
+    <script src="api.js?v=2"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Fraunces:ital,wght@0,300;0,500;1,300&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+    <style>
+        @font-face {
+            font-family: 'OpenDyslexic';
+            src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/OpenDyslexic-Regular.otf') format('opentype');
+            font-weight: 400;
+        }
+        @font-face {
+            font-family: 'OpenDyslexic';
+            src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/OpenDyslexic-Bold.otf') format('opentype');
+            font-weight: 700;
+        }
+
+        :root {
+            --bg:          #fdf7f0;
+            --surface:     #fff9f4;
+            --peach:       #f0a080;
+            --peach-soft:  #fce8dc;
+            --peach-pale:  #fff1ea;
+            --peach-deep:  #e07060;
+            --sage:        #84b8a4;
+            --sage-soft:   #d0ece4;
+            --lav:         #a89cd4;
+            --lav-soft:    #e4e0f4;
+            --amber:       #f0c060;
+            --amber-soft:  #fef3d0;
+            --rose-soft:   #fddcdc;
+            --rose:        #f0a0a0;
+            --text:        #2e2218;
+            --text-mid:    #6b4e3c;
+            --text-muted:  #a88878;
+            --border:      #ead8cc;
+            --radius:      22px;
+            --radius-sm:   12px;
+            --shadow:      0 4px 28px rgba(160,100,60,.09);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'OpenDyslexic', 'Nunito', sans-serif;
+            background: var(--bg);
+            background-image:
+                radial-gradient(ellipse 65% 55% at 10% 15%, rgba(240,160,128,.16) 0%, transparent 60%),
+                radial-gradient(ellipse 55% 45% at 90% 85%, rgba(168,156,212,.12) 0%, transparent 55%),
+                radial-gradient(ellipse 40% 40% at 55% 50%, rgba(132,184,164,.08) 0%, transparent 55%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── TOP BAR ── */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 40px;
+            background: var(--surface);
+            border-bottom: 1.5px solid var(--border);
+        }
+
+        .logo {
+            font-family: 'Fraunces', serif;
+            font-size: 1.5rem;
+            letter-spacing: -.4px;
+            color: var(--text);
+            text-decoration: none;
+        }
+        .logo em { color: var(--peach); font-style: normal; }
+
+        .logo-sub {
+            font-size: .6rem;
+            font-weight: 700;
+            letter-spacing: 1.4px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+
+        .topbar-nav {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-link {
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: .78rem;
+            font-weight: 700;
+            color: var(--text-mid);
+            text-decoration: none;
+            border: 1.5px solid transparent;
+            transition: all .2s;
+        }
+        .nav-link:hover { background: var(--peach-pale); border-color: var(--border); }
+        .nav-link.active {
+            background: var(--peach-soft);
+            border-color: var(--peach);
+            color: #b85030;
+        }
+
+        /* ── MAIN CONTENT ── */
+        .page-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 48px 24px;
+            gap: 32px;
+        }
+
+        .page-heading {
+            text-align: center;
+            animation: fadeDown .5s ease both;
+        }
+        .page-heading h1 {
+            font-family: 'Fraunces', serif;
+            font-size: 2rem;
+            font-weight: 400;
+            color: var(--text);
+            letter-spacing: -.4px;
+            margin-bottom: 8px;
+        }
+        .page-heading h1 em { color: var(--peach); font-style: italic; }
+        .page-heading p {
+            font-size: .85rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+            max-width: 480px;
+        }
+
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── UPLOAD CARD ── */
+        .upload-card {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 640px;
+            animation: cardUp .55s cubic-bezier(.22,.68,0,1.2) .1s both;
+        }
+        @keyframes cardUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── DROP ZONE ── */
+        .drop-zone {
+            margin: 32px;
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-sm);
+            padding: 52px 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            transition: all .25s;
+            background: var(--bg);
+            text-align: center;
+        }
+        .drop-zone:hover, .drop-zone.drag-over {
+            border-color: var(--peach);
+            background: var(--peach-pale);
+        }
+        .drop-zone.has-file {
+            border-color: var(--sage);
+            background: var(--sage-soft);
+        }
+
+        .drop-icon {
+            width: 60px; height: 60px;
+            border-radius: 18px;
+            background: var(--peach-soft);
+            border: 1.5px solid var(--peach);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+            color: #b85030;
+            transition: all .25s;
+        }
+        .drop-zone.has-file .drop-icon {
+            background: var(--sage-soft);
+            border-color: var(--sage);
+            color: #2a6a50;
+        }
+
+        .drop-title {
+            font-size: .95rem;
+            font-weight: 700;
+            color: var(--text-mid);
+        }
+        .drop-sub {
+            font-size: .75rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .file-name-badge {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            background: var(--surface);
+            border: 1.5px solid var(--sage);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: .78rem;
+            font-weight: 700;
+            color: #2a6a50;
+        }
+        .drop-zone.has-file .file-name-badge { display: flex; }
+        .drop-zone.has-file .drop-title { display: none; }
+        .drop-zone.has-file .drop-sub { display: none; }
+
+        /* ── CARD FOOTER ── */
+        .card-footer {
+            padding: 0 32px 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn-process {
+            width: 100%;
+            padding: 14px;
+            border-radius: 24px;
+            background: linear-gradient(135deg, var(--peach), #f4a898);
+            border: none;
+            color: #fff;
+            font-family: 'OpenDyslexic', 'Nunito', sans-serif;
+            font-size: .88rem;
+            font-weight: 700;
+            letter-spacing: .03em;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(240,160,128,.35);
+            transition: all .2s;
+        }
+        .btn-process:hover:not(:disabled) {
+            background: linear-gradient(135deg, var(--peach-deep), #e8897a);
+            box-shadow: 0 6px 22px rgba(224,112,96,.42);
+            transform: translateY(-1px);
+        }
+        .btn-process:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+        .btn-process:active:not(:disabled) { transform: scale(.97); }
+
+        .upload-note {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: .72rem;
+            color: var(--text-muted);
+            justify-content: center;
+        }
+
+        /* ── LOADING STATE ── */
+        #loading-view {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 52px 32px;
+        }
+
+        .spinner-ring {
+            width: 56px; height: 56px;
+            border-radius: 50%;
+            border: 4px solid var(--peach-soft);
+            border-top-color: var(--peach);
+            animation: spin .8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-title {
+            font-family: 'Fraunces', serif;
+            font-size: 1.2rem;
+            color: var(--text);
+            text-align: center;
+        }
+
+        .loading-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .loading-step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: .78rem;
+            color: var(--text-muted);
+            padding: 8px 14px;
+            border-radius: var(--radius-sm);
+            background: var(--bg);
+            border: 1.5px solid var(--border);
+            transition: all .3s;
+        }
+        .loading-step.active {
+            background: var(--peach-pale);
+            border-color: var(--peach);
+            color: #b85030;
+            font-weight: 700;
+        }
+        .loading-step.done {
+            background: var(--sage-soft);
+            border-color: var(--sage);
+            color: #2a6a50;
+        }
+        .step-icon { font-size: .85rem; width: 18px; text-align: center; }
+
+        /* ── RESULTS VIEW ── */
+        #results-view {
+            display: none;
+            width: 100%;
+            max-width: 1200px;
+            flex-direction: column;
+            gap: 24px;
+            animation: cardUp .4s ease both;
+        }
+
+        /* Stats bar */
+        .stats-bar {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            flex: 1;
+            min-width: 160px;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 18px 22px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .stat-icon {
+            width: 42px; height: 42px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .stat-icon.peach { background: var(--peach-soft); }
+        .stat-icon.sage  { background: var(--sage-soft); }
+        .stat-icon.lav   { background: var(--lav-soft); }
+        .stat-icon.amber { background: var(--amber-soft); }
+
+        .stat-body {}
+        .stat-val {
+            font-family: 'Fraunces', serif;
+            font-size: 1.6rem;
+            color: var(--text);
+            line-height: 1;
+            margin-bottom: 2px;
+        }
+        .stat-label {
+            font-size: .68rem;
+            font-weight: 700;
+            letter-spacing: .8px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        /* Side-by-side panels */
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .result-panel {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 16px 24px;
+            border-bottom: 1.5px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: .65rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 4px 12px;
+            border-radius: 16px;
+        }
+        .panel-badge.original {
+            background: var(--lav-soft);
+            border: 1px solid var(--lav);
+            color: #5040a0;
+        }
+        .panel-badge.transformed {
+            background: var(--sage-soft);
+            border: 1px solid var(--sage);
+            color: #2a6a50;
+        }
+
+        .panel-title {
+            font-size: .85rem;
+            font-weight: 700;
+            color: var(--text-mid);
+        }
+
+        .panel-body {
+            padding: 24px;
+            overflow-y: auto;
+            max-height: 560px;
+            flex: 1;
+        }
+
+        .exam-text {
+            font-size: .92rem;
+            line-height: 2;
+            letter-spacing: .04em;
+            word-spacing: .14em;
+            color: var(--text);
+            white-space: pre-wrap;
+        }
+
+        /* Highlight changed lines in transformed panel */
+        .changed-line {
+            background: rgba(132,184,164,.18);
+            border-left: 3px solid var(--sage);
+            padding-left: 10px;
+            margin-left: -13px;
+            border-radius: 0 6px 6px 0;
+        }
+
+        /* Results actions */
+        .results-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .btn-secondary {
+            padding: 11px 24px;
+            border-radius: 24px;
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            font-family: 'OpenDyslexic', 'Nunito', sans-serif;
+            font-size: .82rem;
+            font-weight: 700;
+            color: var(--text-mid);
+            cursor: pointer;
+            transition: all .2s;
+        }
+        .btn-secondary:hover { background: var(--peach-pale); border-color: var(--peach); }
+
+        .btn-primary {
+            padding: 11px 28px;
+            border-radius: 24px;
+            background: linear-gradient(135deg, var(--peach), #f4a898);
+            border: none;
+            color: #fff;
+            font-family: 'OpenDyslexic', 'Nunito', sans-serif;
+            font-size: .82rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(240,160,128,.35);
+            transition: all .2s;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--peach-deep), #e8897a);
+            transform: translateY(-1px);
+        }
+
+        .btn-sage {
+            padding: 11px 28px;
+            border-radius: 24px;
+            background: linear-gradient(135deg, var(--sage), #6aaa94);
+            border: none;
+            color: #fff;
+            font-family: 'OpenDyslexic', 'Nunito', sans-serif;
+            font-size: .82rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(132,184,164,.35);
+            transition: all .2s;
+        }
+        .btn-sage:hover {
+            background: linear-gradient(135deg, #6aaa94, #54967e);
+            transform: translateY(-1px);
+        }
+
+        /* Error banner */
+        .error-banner {
+            display: none;
+            background: var(--rose-soft);
+            border: 1.5px solid var(--rose);
+            border-radius: var(--radius-sm);
+            padding: 14px 20px;
+            font-size: .82rem;
+            color: #b83040;
+            gap: 10px;
+            align-items: center;
+            margin: 0 32px 24px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="pdf_export.js"></script>
+</head>
+<body>
+
+<!-- Top bar -->
+<header class="topbar">
+    <div>
+        <a class="logo" href="Login.html">LEX<em>ORA</em></a>
+        <div class="logo-sub">Accessible Exam Platform</div>
+    </div>
+    <nav class="topbar-nav">
+        <a class="nav-link active" href="Upload.html">Upload Exam</a>
+        <a class="nav-link" href="Login.html">Student Portal</a>
+        <a class="nav-link" href="Admin_Portal.html">Admin Portal</a>
+    </nav>
+</header>
+
+<!-- Page content -->
+<div class="page-content">
+
+    <!-- Heading -->
+    <div class="page-heading">
+        <h1>Make your exam <em>accessible</em></h1>
+        <p>Upload any PDF exam paper. Lexora analyses the cognitive load of every sentence and simplifies the language — without changing the questions.</p>
+    </div>
+
+    <!-- Upload card -->
+    <div class="upload-card" id="upload-card">
+
+        <!-- Upload view -->
+        <div id="upload-view">
+            <div class="drop-zone" id="drop-zone">
+                <div class="drop-icon"><i class="fa-solid fa-file-pdf"></i></div>
+                <div class="drop-title">Drop your PDF exam here</div>
+                <div class="drop-sub">or click to browse files<br><span style="font-size:.7rem;opacity:.7">PDF files only · max 20 MB</span></div>
+                <div class="file-name-badge">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span id="file-name-label">exam.pdf</span>
+                </div>
+            </div>
+
+            <div class="error-banner" id="error-banner">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span id="error-text">Something went wrong.</span>
+            </div>
+
+            <div class="card-footer">
+                <button class="btn-process" id="btn-process" disabled>
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>&nbsp; Process Exam
+                </button>
+                <div class="upload-note">
+                    <i class="fa-solid fa-lock" style="font-size:.65rem"></i>
+                    Your file is sent securely to the Lexora server for processing and not retained.
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading view -->
+        <div id="loading-view">
+            <div class="spinner-ring"></div>
+            <div class="loading-title">Analysing your exam…</div>
+            <div class="loading-steps">
+                <div class="loading-step active" id="step-1">
+                    <span class="step-icon">📄</span> Extracting text from PDF
+                </div>
+                <div class="loading-step" id="step-2">
+                    <span class="step-icon">🔍</span> Parsing question structure
+                </div>
+                <div class="loading-step" id="step-3">
+                    <span class="step-icon">🧠</span> Scoring cognitive load
+                </div>
+                <div class="loading-step" id="step-4">
+                    <span class="step-icon">✏️</span> Simplifying high-risk sentences
+                </div>
+                <div class="loading-step" id="step-5">
+                    <span class="step-icon">📋</span> Rebuilding exam structure
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Results view (outside upload card, full width) -->
+    <div id="results-view">
+
+        <!-- Stats -->
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-icon peach">📄</div>
+                <div class="stat-body">
+                    <div class="stat-val" id="stat-questions">—</div>
+                    <div class="stat-label">Questions Found</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon sage">✏️</div>
+                <div class="stat-body">
+                    <div class="stat-val" id="stat-modified">—</div>
+                    <div class="stat-label">Units Simplified</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon lav">📊</div>
+                <div class="stat-body">
+                    <div class="stat-val" id="stat-total">—</div>
+                    <div class="stat-label">Total Units</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon amber">⚠️</div>
+                <div class="stat-body">
+                    <div class="stat-val" id="stat-incomplete">—</div>
+                    <div class="stat-label">PDF Data Loss</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Side-by-side -->
+        <div class="results-grid">
+            <div class="result-panel">
+                <div class="panel-header">
+                    <span class="panel-badge original">Original</span>
+                    <span class="panel-title">Original Exam</span>
+                </div>
+                <div class="panel-body">
+                    <div class="exam-text" id="original-text"></div>
+                </div>
+            </div>
+            <div class="result-panel">
+                <div class="panel-header">
+                    <span class="panel-badge transformed">Simplified</span>
+                    <span class="panel-title">Dyslexia-Friendly Version</span>
+                </div>
+                <div class="panel-body">
+                    <div class="exam-text" id="transformed-text"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="results-actions">
+            <button class="btn-secondary" onclick="resetUpload()">
+                <i class="fa-solid fa-arrow-left"></i>&nbsp; Upload Another
+            </button>
+            <button class="btn-primary" onclick="downloadResult()">
+                <i class="fa-solid fa-download"></i>&nbsp; Download Simplified Exam
+            </button>
+            <button class="btn-sage" onclick="openInPortal()">
+                <i class="fa-solid fa-play"></i>&nbsp; Open in Student Portal
+            </button>
+        </div>
+
+    </div>
+
+</div>
+
+<input type="file" id="file-input" accept=".pdf" style="display:none"/>
+
+<script>
+    const dropZone   = document.getElementById('drop-zone');
+    const fileInput  = document.getElementById('file-input');
+    const btnProcess = document.getElementById('btn-process');
+    const uploadView = document.getElementById('upload-view');
+    const loadingView= document.getElementById('loading-view');
+    const resultsView= document.getElementById('results-view');
+    const uploadCard = document.getElementById('upload-card');
+    const errorBanner= document.getElementById('error-banner');
+    const errorText  = document.getElementById('error-text');
+
+    let selectedFile = null;
+    let lastResult   = null;
+    let lastOriginal = null;
+
+    // ── File selection ──────────────────────────────────────
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files[0]) setFile(fileInput.files[0]);
+    });
+
+    dropZone.addEventListener('dragover', e => {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+    });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
+    });
+
+    function setFile(file) {
+        if (!file.name.toLowerCase().endsWith('.pdf')) {
+            showError('Please upload a PDF file.');
+            return;
+        }
+        selectedFile = file;
+        document.getElementById('file-name-label').textContent = file.name;
+        dropZone.classList.add('has-file');
+        btnProcess.disabled = false;
+        hideError();
+    }
+
+    // ── Process ─────────────────────────────────────────────
+    btnProcess.addEventListener('click', async () => {
+        if (!selectedFile) return;
+
+        // Switch to loading state
+        uploadView.style.display = 'none';
+        loadingView.style.display = 'flex';
+
+        // Real-time step advancement driven by SSE progress events
+        const steps = ['step-1','step-2','step-3','step-4','step-5'];
+
+        function advanceStep(stepNumber) {
+            for (let i = 0; i < stepNumber - 1; i++) {
+                const el = document.getElementById(steps[i]);
+                el.classList.remove('active');
+                el.classList.add('done');
+                el.querySelector('.step-icon').textContent = '\u2713';
+            }
+            if (stepNumber <= steps.length) {
+                const el = document.getElementById(steps[stepNumber - 1]);
+                el.classList.remove('done');
+                el.classList.add('active');
+            }
+        }
+
+        // Activate first step immediately
+        advanceStep(1);
+
+        try {
+            const result = await processPDFWithProgress(selectedFile, (step) => {
+                advanceStep(step);
+            });
+
+            // Mark all steps done
+            steps.forEach(s => {
+                document.getElementById(s).classList.remove('active');
+                document.getElementById(s).classList.add('done');
+                document.getElementById(s).querySelector('.step-icon').textContent = '\u2713';
+            });
+
+            setTimeout(() => showResults(result), 400);
+
+        } catch (err) {
+            loadingView.style.display = 'none';
+            uploadView.style.display = 'block';
+            showError(err.message || 'Failed to process PDF. Please try again.');
+        }
+    });
+
+    // ── Show results ─────────────────────────────────────────
+    function showResults(result) {
+        lastResult = result;
+
+        // Stats
+        document.getElementById('stat-questions').textContent  = result.stats.questions_found;
+        document.getElementById('stat-modified').textContent   = result.stats.units_modified;
+        document.getElementById('stat-total').textContent      = result.stats.total_units;
+        document.getElementById('stat-incomplete').textContent = result.stats.incomplete_units;
+
+        // Build original text from units (original field)
+        const originalLines = result.units
+            .map(u => u.original || '')
+            .filter(t => t.trim())
+            .join('\n');
+
+        document.getElementById('original-text').textContent = originalLines;
+        document.getElementById('transformed-text').textContent = result.exam_text;
+
+        // Hide upload card, show results
+        uploadCard.style.display = 'none';
+        resultsView.style.display = 'flex';
+    }
+
+    // ── Reset ────────────────────────────────────────────────
+    function resetUpload() {
+        selectedFile = null;
+        lastResult   = null;
+        fileInput.value = '';
+        dropZone.classList.remove('has-file');
+        btnProcess.disabled = true;
+        hideError();
+
+        // Reset steps
+        ['step-1','step-2','step-3','step-4','step-5'].forEach((s, i) => {
+            const el = document.getElementById(s);
+            el.classList.remove('active','done');
+            if (i === 0) el.classList.add('active');
+        });
+
+        uploadView.style.display = 'block';
+        loadingView.style.display = 'none';
+        uploadCard.style.display = 'block';
+        resultsView.style.display = 'none';
+    }
+
+    // ── Download PDF ─────────────────────────────────────────
+    function downloadResult() {
+        if (!lastResult) return;
+        const fileName = (document.getElementById('file-name-label').textContent || 'exam').replace(/\.pdf$/i, '');
+        buildAndDownloadPDF(lastResult, fileName);
+    }
+
+    // ── Open in Student Portal ────────────────────────────────
+    function openInPortal() {
+        if (!lastResult) return;
+        const fileName = (document.getElementById('file-name-label').textContent || 'exam').replace(/\.pdf$/i, '');
+        localStorage.setItem('lexora_exam', JSON.stringify(lastResult));
+        localStorage.setItem('lexora_exam_name', fileName);
+        window.location.href = 'PreExam_Dashboard.html';
+    }
+
+    // ── Error helpers ─────────────────────────────────────────
+    function showError(msg) {
+        errorText.textContent = msg;
+        errorBanner.style.display = 'flex';
+    }
+    function hideError() {
+        errorBanner.style.display = 'none';
+    }
+</script>
+
+</body>
+</html>

@@ -1,15 +1,35 @@
-from fastapi import FastAPI, Request
+import tempfile
+import os
+import json
+
+from fastapi import FastAPI, Request, UploadFile, File, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import List
 
 from core.complexity.scorer import compute_complexity
 from core.transform import transform_text
+from core.ingestion.pdf_reader import extract_text_from_pdf
+from core.ingestion.question_parser import parse_questions
+from core.ingestion.question_analyzer import analyze_question_block
+from core.ingestion.question_cleaner import clean_questions, clean_analyzed_question
+from core.transform.unit_builder import build_units
+from core.transform.transform_runner import run_transformation, score_all_units, transform_all_units
+from core.output.exam_reconstructor import reconstruct_exam
 
 
 app = FastAPI(
     title="Lexora API",
     description="Cognitive-load transformation engine for dyslexic-friendly exam text",
     version="1.0"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -99,3 +119,214 @@ async def transform_batch(req: BatchRequest, request: Request):
             "questions_modified": modified_count
         }
     }
+
+
+# -----------------------------
+# Process PDF (Full Pipeline)
+# -----------------------------
+
+@app.post("/v1/process-pdf")
+async def process_pdf(request: Request, file: UploadFile = File(...)):
+
+    print("PDF process request from:", request.client.host)
+
+    if not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="File must be a PDF")
+
+    # Save uploaded file to temp location
+    tmp = None
+    try:
+        content = await file.read()
+        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+        tmp.write(content)
+        tmp.close()
+
+        # Stage 1: Extract text
+        text = extract_text_from_pdf(tmp.name)
+
+        if not text.strip():
+            raise HTTPException(status_code=422, detail="Could not extract text from PDF")
+
+        # Stage 2: Parse questions
+        questions = parse_questions(text)
+
+        if not questions:
+            raise HTTPException(status_code=422, detail="No questions found in PDF")
+
+        # Save raw parsed text before cleaning (used for "original" view in frontend)
+        raw_questions = list(questions)
+
+        # Stage 3: Analyze structure on raw text (preserves paragraph numbers)
+        analyzed = [analyze_question_block(q) for q in questions]
+
+        # Stage 3b: Clean layout artifacts on analyzed fields
+        # Passages keep paragraph numbers so the frontend can split them.
+        for aq in analyzed:
+            clean_analyzed_question(aq)
+
+        # Stage 4: Build units
+        all_units = []
+        for i, q in enumerate(analyzed, start=1):
+            all_units.extend(build_units(i, q))
+
+        # Stage 5: Transform
+        results = run_transformation(all_units)
+
+        # Stage 6: Reconstruct
+        exam_text = reconstruct_exam(results)
+
+        # Build response
+        total = len(results)
+        changed = [r for r in results if r["changed"]]
+        incomplete = [r for r in results if r["risk_before"] is None and r["type"] == "subquestion"]
+
+        unit_details = []
+        for r in results:
+            unit_details.append({
+                "id": r["id"],
+                "type": r["type"],
+                "original": r.get("original", ""),
+                "modified": r.get("modified", ""),
+                "risk_before": r["risk_before"],
+                "risk_after": r["risk_after"],
+                "changed": r["changed"],
+                "marks": r["marks"],
+                "keywords": r.get("keywords", []),
+                "complexity": r.get("complexity"),
+            })
+
+        return {
+            "exam_text": exam_text,
+            "stats": {
+                "total_units": total,
+                "units_modified": len(changed),
+                "incomplete_units": len(incomplete),
+                "questions_found": len(questions),
+            },
+            "raw_questions": [
+                {"number": i + 1, "text": q} for i, q in enumerate(raw_questions)
+            ],
+            "units": unit_details,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if tmp and os.path.exists(tmp.name):
+            os.unlink(tmp.name)
+
+
+# -----------------------------------------
+# Process PDF with SSE Progress (Streaming)
+# -----------------------------------------
+
+def _sse(event: str, data: dict) -> str:
+    """Format a single Server-Sent Event."""
+    return f"event: {event}\ndata: {json.dumps(data)}\n\n"
+
+
+@app.post("/v1/process-pdf-stream")
+async def process_pdf_stream(request: Request, file: UploadFile = File(...)):
+
+    print("PDF stream request from:", request.client.host)
+
+    if not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="File must be a PDF")
+
+    # Read file into memory before entering the sync generator
+    content = await file.read()
+
+    def generate():
+        tmp = None
+        try:
+            tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+            tmp.write(content)
+            tmp.close()
+
+            # Step 1: Extract text from PDF
+            yield _sse("progress", {"step": 1, "label": "Extracting text from PDF"})
+            text = extract_text_from_pdf(tmp.name)
+
+            if not text.strip():
+                yield _sse("error", {"detail": "Could not extract text from PDF"})
+                return
+
+            # Step 2: Parse + analyze + clean + build units
+            yield _sse("progress", {"step": 2, "label": "Parsing question structure"})
+            questions = parse_questions(text)
+
+            if not questions:
+                yield _sse("error", {"detail": "No questions found in PDF"})
+                return
+
+            raw_questions = list(questions)
+            analyzed = [analyze_question_block(q) for q in questions]
+            for aq in analyzed:
+                clean_analyzed_question(aq)
+
+            all_units = []
+            for i, q in enumerate(analyzed, start=1):
+                all_units.extend(build_units(i, q))
+
+            # Step 3: Score cognitive load
+            yield _sse("progress", {"step": 3, "label": "Scoring cognitive load"})
+            scored = score_all_units(all_units)
+
+            # Step 4: Simplify high-risk sentences
+            yield _sse("progress", {"step": 4, "label": "Simplifying high-risk sentences"})
+            results = transform_all_units(scored)
+
+            # Step 5: Rebuild exam structure
+            yield _sse("progress", {"step": 5, "label": "Rebuilding exam structure"})
+            exam_text = reconstruct_exam(results)
+
+            # Build response (same shape as /v1/process-pdf)
+            total = len(results)
+            changed = [r for r in results if r["changed"]]
+            incomplete = [r for r in results if r["risk_before"] is None and r["type"] == "subquestion"]
+
+            unit_details = []
+            for r in results:
+                unit_details.append({
+                    "id": r["id"],
+                    "type": r["type"],
+                    "original": r.get("original", ""),
+                    "modified": r.get("modified", ""),
+                    "risk_before": r["risk_before"],
+                    "risk_after": r["risk_after"],
+                    "changed": r["changed"],
+                    "marks": r["marks"],
+                    "keywords": r.get("keywords", []),
+                    "complexity": r.get("complexity"),
+                })
+
+            yield _sse("result", {
+                "exam_text": exam_text,
+                "stats": {
+                    "total_units": total,
+                    "units_modified": len(changed),
+                    "incomplete_units": len(incomplete),
+                    "questions_found": len(questions),
+                },
+                "raw_questions": [
+                    {"number": i + 1, "text": q} for i, q in enumerate(raw_questions)
+                ],
+                "units": unit_details,
+            })
+
+        except Exception as e:
+            yield _sse("error", {"detail": str(e)})
+        finally:
+            if tmp and os.path.exists(tmp.name):
+                os.unlink(tmp.name)
+
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        },
+    )

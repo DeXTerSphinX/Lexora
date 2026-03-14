@@ -1,0 +1,1696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>LEXORA — Admin Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Fraunces:ital,wght@0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="transitions.css"/>
+    <script defer src="transitions.js"></script>
+    <script src="api.js?v=2"></script>
+
+    <style>
+        :root {
+            /* ── Exact same palette as student screens ── */
+            --bg:           #fdf7f0;
+            --surface:      #fff9f4;
+            --surface-2:    #fef4ec;
+
+            --peach:        #f0a080;
+            --peach-soft:   #fce8dc;
+            --peach-pale:   #fff1ea;
+            --rose-soft:    #fddcdc;
+            --rose:         #f0a0a0;
+            --sage:         #84b8a4;
+            --sage-soft:    #d0ece4;
+            --lav:          #a89cd4;
+            --lav-soft:     #e4e0f4;
+            --amber:        #f0c060;
+            --amber-soft:   #fef3d0;
+
+            /* Text */
+            --text:         #2e2218;
+            --text-mid:     #6b4e3c;
+            --text-muted:   #a88878;
+            --text-light:   #c4aca0;
+
+            /* Borders */
+            --border:       #ead8cc;
+            --border-soft:  #f0e4d8;
+
+            /* Sidebar — warm pastel, matches student theme */
+            --sidebar-bg:        #fff4ec;
+            --sidebar-border:    #ead8cc;
+            --sidebar-text:      #6b4e3c;
+            --sidebar-muted:     #b89888;
+            --sidebar-active-bg: #fce8dc;
+            --sidebar-active-tx: #c05c34;
+
+            --slate-pale:   #fdf0e8;
+            --blue-soft:    #e4e0f4;
+
+            --radius:    18px;
+            --radius-sm: 10px;
+            --radius-xs: 6px;
+            --shadow:    0 2px 20px rgba(180,100,60,.07);
+            --shadow-sm: 0 1px 6px rgba(180,100,60,.04);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ═══════════════════════════════════════
+           SIDEBAR — warm pastel, matches student
+        ═══════════════════════════════════════ */
+        .sidebar {
+            width: 224px;
+            background: var(--sidebar-bg);
+            border-right: 1.5px solid var(--sidebar-border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 0 0 24px;
+        }
+
+        .sidebar-logo {
+            padding: 24px 20px 20px;
+            border-bottom: 1.5px solid var(--sidebar-border);
+            margin-bottom: 8px;
+        }
+        .logo-text {
+            font-family: 'Fraunces', serif;
+            font-size: 1.45rem;
+            color: var(--text);
+            letter-spacing: -.3px;
+        }
+        .logo-text em { color: var(--peach); font-style: normal; }
+        .logo-sub {
+            font-size: .62rem;
+            color: var(--sidebar-muted);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-top: 3px;
+            font-weight: 700;
+        }
+
+        .nav-section {
+            padding: 0 12px;
+            margin-bottom: 4px;
+        }
+        .nav-section-label {
+            font-size: .58rem;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: var(--sidebar-muted);
+            padding: 12px 8px 6px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: background .18s;
+            color: var(--sidebar-text);
+            font-size: .82rem;
+            font-weight: 600;
+            margin-bottom: 2px;
+            border: 1.5px solid transparent;
+        }
+        .nav-item:hover {
+            background: var(--peach-pale);
+            color: var(--text-mid);
+        }
+        .nav-item.active {
+            background: var(--sidebar-active-bg);
+            border-color: var(--peach-soft);
+            color: var(--sidebar-active-tx);
+            font-weight: 700;
+        }
+        .nav-icon {
+            width: 30px; height: 30px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .88rem;
+            flex-shrink: 0;
+            background: rgba(240,160,128,.1);
+        }
+        .nav-item.active .nav-icon {
+            background: var(--peach-soft);
+        }
+        .nav-badge {
+            margin-left: auto;
+            background: var(--peach);
+            color: #fff;
+            font-size: .58rem;
+            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: 8px;
+        }
+        .nav-badge.warn {
+            background: var(--amber);
+            color: #7a4a00;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 14px 12px 0;
+            border-top: 1.5px solid var(--sidebar-border);
+        }
+        .admin-chip {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            background: var(--peach-pale);
+            border: 1.5px solid var(--border);
+        }
+        .admin-avatar {
+            width: 30px; height: 30px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--peach), #f4c0a0);
+            display: flex; align-items: center; justify-content: center;
+            font-size: .68rem; font-weight: 800; color: #804828;
+            flex-shrink: 0;
+        }
+        .admin-info { display: flex; flex-direction: column; gap: 1px; }
+        .admin-name { font-size: .75rem; font-weight: 700; color: var(--text); }
+        .admin-role { font-size: .6rem; color: var(--text-muted); }
+
+        /* ═══════════════════════════════════════
+           RIGHT SIDE (header + content)
+        ═══════════════════════════════════════ */
+        .right-side {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ── TOP HEADER ── */
+        .topbar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .topbar-title {
+            font-family: 'Fraunces', serif;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text);
+            flex-shrink: 0;
+        }
+
+        .search-wrap {
+            flex: 1;
+            max-width: 320px;
+            position: relative;
+            margin-left: 16px;
+        }
+        .search-icon {
+            position: absolute; left: 12px; top: 50%;
+            transform: translateY(-50%);
+            font-size: .82rem; color: var(--text-muted);
+            pointer-events: none;
+        }
+        .search-input {
+            width: 100%;
+            background: var(--surface-2);
+            border: 1.5px solid var(--border);
+            border-radius: 22px;
+            padding: 7px 14px 7px 34px;
+            font-family: 'Nunito', sans-serif;
+            font-size: .8rem;
+            color: var(--text);
+            outline: none;
+            transition: border .2s;
+        }
+        .search-input:focus { border-color: var(--peach); }
+        .search-input::placeholder { color: var(--text-muted); }
+
+        .topbar-right {
+            margin-left: auto;
+            display: flex; align-items: center; gap: 12px;
+        }
+        .date-chip {
+            font-size: .72rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            background: var(--surface-2);
+            padding: 5px 12px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+        }
+        .status-live {
+            display: flex; align-items: center; gap: 6px;
+            background: var(--sage-soft);
+            border: 1px solid var(--sage);
+            color: #2a6a50;
+            font-size: .7rem; font-weight: 700;
+            padding: 5px 12px; border-radius: 14px;
+        }
+        .live-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--sage);
+            animation: blink 1.4s ease-in-out infinite;
+        }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+        .notif-btn {
+            width: 34px; height: 34px; border-radius: 50%;
+            background: var(--surface-2);
+            border: 1.5px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: .9rem; position: relative;
+            transition: background .2s;
+        }
+        .notif-btn:hover { background: var(--peach-soft); }
+        .notif-dot {
+            position: absolute; top: 5px; right: 5px;
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--peach);
+            border: 1.5px solid var(--surface);
+        }
+        .inst-chip {
+            display: flex; align-items: center; gap: 7px;
+            background: var(--surface-2);
+            border: 1.5px solid var(--border);
+            padding: 5px 12px 5px 7px;
+            border-radius: 22px;
+        }
+        .inst-dot {
+            width: 24px; height: 24px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--lav), #c0b4e8);
+            display: flex; align-items: center; justify-content: center;
+            font-size: .6rem; font-weight: 800; color: #fff;
+        }
+        .inst-name { font-size: .75rem; font-weight: 700; color: var(--text-mid); }
+
+        /* ── MAIN SCROLL ── */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 28px 32px 48px;
+            display: grid;
+            grid-template-columns: 1fr 280px;
+            gap: 24px;
+            align-items: start;
+        }
+
+        /* Left column */
+        .left-col { display: flex; flex-direction: column; gap: 20px; }
+
+        /* ── CARD BASE ── */
+        .card {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px 26px;
+            box-shadow: var(--shadow);
+        }
+        .card-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 18px;
+        }
+        .card-title-wrap { display: flex; align-items: center; gap: 10px; }
+        .card-icon {
+            width: 34px; height: 34px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .95rem; flex-shrink: 0;
+        }
+        .ci-peach  { background: var(--peach-soft); }
+        .ci-sage   { background: var(--sage-soft); }
+        .ci-lav    { background: var(--lav-soft); }
+        .ci-amber  { background: var(--amber-soft); }
+        .ci-slate  { background: var(--slate-pale); }
+        .ci-rose   { background: var(--rose-soft); }
+
+        .card-title {
+            font-size: .9rem; font-weight: 800; color: var(--text);
+        }
+        .card-sub {
+            font-size: .7rem; color: var(--text-muted); margin-top: 1px;
+        }
+        .sec-label {
+            font-size: .6rem; font-weight: 700; letter-spacing: 1.1px;
+            text-transform: uppercase; color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        /* ════════════════════════
+           1. UPLOAD AREA
+        ════════════════════════ */
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--surface-2);
+            padding: 36px 24px;
+            display: flex; flex-direction: column;
+            align-items: center; gap: 10px;
+            cursor: pointer; text-align: center;
+            transition: border-color .2s, background .2s;
+            position: relative;
+        }
+        .upload-zone:hover {
+            border-color: var(--peach);
+            background: var(--peach-pale);
+        }
+        .upload-zone input {
+            position: absolute; inset: 0;
+            opacity: 0; cursor: pointer;
+        }
+        .upload-glyph {
+            width: 52px; height: 52px; border-radius: 14px;
+            background: var(--peach-soft);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem;
+            transition: background .2s;
+        }
+        .upload-zone:hover .upload-glyph { background: var(--peach); }
+        .upload-title {
+            font-size: .92rem; font-weight: 700; color: var(--text-mid);
+        }
+        .upload-title span { color: var(--peach); text-decoration: underline; text-underline-offset: 3px; }
+        .upload-hint { font-size: .7rem; color: var(--text-muted); }
+        .fmt-row { display: flex; gap: 6px; margin-top: 4px; }
+        .fmt-tag {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            color: var(--text-muted);
+            font-size: .62rem; font-weight: 700;
+            padding: 3px 10px; border-radius: 8px;
+        }
+
+        /* Extraction status */
+        .extract-status {
+            display: flex; align-items: center; gap: 10px;
+            background: var(--sage-soft);
+            border: 1.5px solid var(--sage);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            margin-top: 12px;
+        }
+        .extract-icon { font-size: 1rem; }
+        .extract-text { display: flex; flex-direction: column; gap: 2px; }
+        .extract-title { font-size: .82rem; font-weight: 700; color: #2a6a50; }
+        .extract-sub   { font-size: .68rem; color: #4a9070; }
+        .extract-badge {
+            margin-left: auto;
+            background: var(--sage);
+            color: #fff;
+            font-size: .62rem; font-weight: 700;
+            padding: 3px 10px; border-radius: 8px;
+        }
+
+        /* ════════════════════════
+           2. NLP PREVIEW
+        ════════════════════════ */
+        .nlp-panel {
+            background: var(--surface-2);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+        .nlp-topbar {
+            background: var(--surface-2);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 16px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .nlp-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .nlp-label {
+            font-size: .68rem; font-weight: 700;
+            letter-spacing: .8px; text-transform: uppercase;
+            color: var(--text-muted); margin-left: 4px;
+        }
+        .nlp-badge-ai {
+            margin-left: auto;
+            background: var(--lav-soft);
+            border: 1px solid var(--lav);
+            color: #5040a0;
+            font-size: .6rem; font-weight: 700;
+            padding: 2px 9px; border-radius: 8px;
+            letter-spacing: .5px;
+        }
+        .nlp-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+
+        .nlp-q-block {
+            background: var(--surface);
+            border: 1px solid var(--border-soft);
+            border-radius: var(--radius-xs);
+            padding: 12px 14px;
+        }
+        .nlp-q-num {
+            font-size: .6rem; font-weight: 700; letter-spacing: .8px;
+            text-transform: uppercase; color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        .nlp-q-text {
+            font-size: .82rem; line-height: 1.7; color: var(--text-mid);
+        }
+        .kw {
+            display: inline; padding: 1px 6px;
+            border-radius: 4px; font-weight: 700;
+        }
+        .kw-p { background: var(--peach-soft); color: #b85030; }
+        .kw-l { background: var(--lav-soft);   color: #5040a0; }
+        .kw-s { background: var(--sage-soft);  color: #2a6a50; }
+        .kw-a { background: var(--amber-soft); color: #7a4a00; }
+
+        .nlp-chunks { display: flex; flex-direction: column; gap: 5px; margin-top: 8px; }
+        .nlp-chunk {
+            display: flex; align-items: flex-start; gap: 7px;
+            font-size: .76rem; color: var(--text-muted); line-height: 1.5;
+        }
+        .chunk-dot {
+            width: 5px; height: 5px; border-radius: 50%;
+            background: var(--peach); flex-shrink: 0; margin-top: 6px;
+        }
+
+        /* ════════════════════════
+           3. EXAM CONFIG
+        ════════════════════════ */
+        .config-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .config-block {
+            background: var(--surface-2);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 14px 16px;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .cfg-label {
+            font-size: .66rem; font-weight: 700; letter-spacing: .8px;
+            text-transform: uppercase; color: var(--text-muted);
+        }
+        .cfg-value {
+            font-size: .95rem; font-weight: 800; color: var(--text);
+        }
+
+        /* Duration slider */
+        .slider-wrap { display: flex; align-items: center; gap: 10px; }
+        .range-slider {
+            flex: 1; height: 4px; border-radius: 4px;
+            -webkit-appearance: none; appearance: none;
+            background: linear-gradient(90deg, var(--peach) 60%, var(--border) 60%);
+            outline: none; cursor: pointer;
+        }
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: var(--peach); border: 2px solid #fff;
+            box-shadow: 0 1px 4px rgba(0,0,0,.15); cursor: pointer;
+        }
+        .slider-val {
+            font-size: .78rem; font-weight: 800;
+            color: var(--peach); min-width: 36px; text-align: right;
+        }
+
+        /* Section pills */
+        .section-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+        .sec-pill {
+            padding: 5px 12px; border-radius: 14px;
+            font-size: .72rem; font-weight: 700;
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            color: var(--text-mid);
+            cursor: pointer; transition: all .15s;
+        }
+        .sec-pill.active {
+            background: var(--lav-soft); border-color: var(--lav); color: #5040a0;
+        }
+        .sec-pill-add {
+            padding: 5px 10px; border-radius: 14px;
+            font-size: .72rem; font-weight: 700;
+            border: 1.5px dashed var(--border);
+            background: transparent; color: var(--text-muted);
+            cursor: pointer; transition: all .15s;
+        }
+        .sec-pill-add:hover { border-color: var(--peach); color: var(--peach); }
+
+        /* ════════════════════════
+           4. INTEGRITY
+        ════════════════════════ */
+        .integrity-list { display: flex; flex-direction: column; gap: 10px; }
+        .int-row {
+            display: flex; align-items: center; justify-content: space-between;
+            background: var(--surface-2);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 13px 16px;
+            gap: 12px;
+        }
+        .int-left { display: flex; align-items: center; gap: 10px; }
+        .int-icon {
+            width: 32px; height: 32px; border-radius: 9px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .85rem; flex-shrink: 0;
+        }
+        .int-text { display: flex; flex-direction: column; gap: 2px; }
+        .int-name { font-size: .82rem; font-weight: 700; color: var(--text); }
+        .int-desc { font-size: .66rem; color: var(--text-muted); }
+
+        /* Stepper for violations */
+        .stepper { display: flex; align-items: center; gap: 6px; }
+        .step-btn {
+            width: 26px; height: 26px; border-radius: 7px;
+            border: 1.5px solid var(--border); background: var(--surface);
+            font-weight: 700; font-size: .85rem; color: var(--text-mid);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all .15s; font-family: inherit;
+        }
+        .step-btn:hover { border-color: var(--peach); color: var(--peach); }
+        .step-val { font-size: .85rem; font-weight: 800; min-width: 18px; text-align: center; }
+
+        /* Toggle switch */
+        .toggle {
+            width: 40px; height: 22px; border-radius: 12px;
+            background: var(--sage); position: relative;
+            cursor: pointer; flex-shrink: 0;
+            transition: background .2s;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,.1);
+        }
+        .toggle::after {
+            content: ''; position: absolute;
+            right: 3px; top: 3px;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: #fff; transition: right .2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,.15);
+        }
+        .toggle.off {
+            background: var(--border);
+        }
+        .toggle.off::after { right: auto; left: 3px; }
+
+        /* Browser check */
+        .browser-check {
+            background: var(--lav-soft);
+            border: 1px solid rgba(168,156,212,.35);
+            border-radius: var(--radius-xs);
+            padding: 10px 14px;
+            display: flex; align-items: center; gap: 10px;
+            margin-top: 4px;
+        }
+        .browser-check-text { font-size: .76rem; color: #5040a0; font-weight: 600; }
+        .browser-ok { margin-left: auto; font-size: .7rem; font-weight: 700; color: var(--sage); }
+
+        /* ════════════════════════
+           5. ACCESSIBILITY SETTINGS
+        ════════════════════════ */
+        .a11y-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .a11y-row {
+            display: flex; align-items: center; justify-content: space-between;
+            background: var(--surface-2);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px; gap: 10px;
+        }
+        .a11y-left { display: flex; align-items: center; gap: 9px; }
+        .a11y-icon {
+            width: 28px; height: 28px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .8rem; flex-shrink: 0;
+        }
+        .a11y-name { font-size: .78rem; font-weight: 700; color: var(--text-mid); }
+
+        /* ════════════════════════
+           6. RIGHT PANEL (monitoring)
+        ════════════════════════ */
+        .right-col { display: flex; flex-direction: column; gap: 18px; }
+
+        .monitor-card {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+        .monitor-title {
+            font-size: .72rem; font-weight: 700; letter-spacing: .9px;
+            text-transform: uppercase; color: var(--text-muted);
+            margin-bottom: 14px;
+        }
+
+        /* Stats row */
+        .stat-row { display: flex; flex-direction: column; gap: 10px; }
+        .stat-block {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 12px;
+            background: var(--surface-2);
+            border: 1px solid var(--border-soft);
+            border-radius: var(--radius-sm);
+        }
+        .stat-left { display: flex; align-items: center; gap: 9px; }
+        .stat-icon {
+            width: 30px; height: 30px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .82rem;
+        }
+        .stat-label { font-size: .76rem; font-weight: 600; color: var(--text-mid); }
+        .stat-num {
+            font-size: 1.1rem; font-weight: 800; color: var(--text);
+        }
+        .stat-num.warn { color: var(--amber); }
+        .stat-num.alert { color: var(--peach); }
+
+        /* Activity feed */
+        .activity-list { display: flex; flex-direction: column; gap: 8px; }
+        .activity-item {
+            display: flex; align-items: flex-start; gap: 9px;
+            padding: 9px 11px;
+            background: var(--surface-2);
+            border-radius: var(--radius-xs);
+            border-left: 3px solid transparent;
+        }
+        .activity-item.ok     { border-color: var(--sage); }
+        .activity-item.warn   { border-color: var(--amber); }
+        .activity-item.alert  { border-color: var(--rose); }
+        .act-icon { font-size: .85rem; flex-shrink: 0; margin-top: 1px; }
+        .act-text { font-size: .72rem; color: var(--text-mid); line-height: 1.5; }
+        .act-time { font-size: .62rem; color: var(--text-muted); margin-top: 1px; }
+
+        /* Connectivity */
+        .conn-list { display: flex; flex-direction: column; gap: 7px; }
+        .conn-row {
+            display: flex; align-items: center; justify-content: space-between;
+            font-size: .76rem; color: var(--text-mid);
+            padding: 7px 10px;
+            background: var(--surface-2);
+            border-radius: var(--radius-xs);
+        }
+        .conn-dot { width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; display: inline-block; }
+        .conn-ok  { color: var(--sage); font-weight: 700; }
+        .conn-warn{ color: var(--amber); font-weight: 700; }
+
+        /* ════════════════════════
+           7. PUBLISH
+        ════════════════════════ */
+        .publish-card {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px 26px;
+            box-shadow: var(--shadow);
+        }
+
+        .exam-link-box {
+            display: flex; align-items: center; gap: 10px;
+            background: var(--surface-2);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 11px 14px;
+            margin-bottom: 16px;
+        }
+        .link-icon { font-size: .9rem; flex-shrink: 0; }
+        .link-url {
+            font-size: .76rem; font-weight: 600; color: var(--text-mid);
+            font-family: 'Courier New', monospace; flex: 1;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .copy-btn {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 7px; padding: 4px 11px;
+            font-family: 'Nunito', sans-serif;
+            font-size: .68rem; font-weight: 700; color: var(--text-muted);
+            cursor: pointer; transition: all .15s; flex-shrink: 0;
+        }
+        .copy-btn:hover { border-color: var(--sage); color: var(--sage); }
+
+        .publish-btns { display: flex; flex-direction: column; gap: 8px; }
+        .btn-publish {
+            width: 100%;
+            padding: 14px;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, var(--peach), #f4a898);
+            border: none;
+            color: #fff;
+            font-family: 'Nunito', sans-serif;
+            font-size: .9rem; font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(240,160,128,.3);
+            transition: all .2s; letter-spacing: .01em;
+        }
+        .btn-publish:hover { opacity: .92; transform: translateY(-1px); }
+
+        .btn-preview {
+            width: 100%;
+            padding: 11px;
+            border-radius: var(--radius-sm);
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            color: var(--text-mid);
+            font-family: 'Nunito', sans-serif;
+            font-size: .82rem; font-weight: 700;
+            cursor: pointer; transition: all .2s;
+        }
+        .btn-preview:hover { background: var(--lav-soft); border-color: var(--lav); color: #5040a0; }
+
+        /* Publish checklist */
+        .pub-checklist { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
+        .pub-check-item {
+            display: flex; align-items: center; gap: 8px;
+            font-size: .75rem; color: var(--text-muted);
+        }
+        .pub-check-item.done { color: var(--sage); }
+        .pub-check-item.done::before { content: '✓'; font-weight: 800; color: var(--sage); }
+        .pub-check-item.pending::before { content: '○'; color: var(--border); }
+
+        /* ══ Scrollbar ══ */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        /* ════════════════════════
+           COMPLEXITY ANALYTICS
+        ════════════════════════ */
+        .cx-panel { display: none; }
+        .cx-panel.visible { display: block; }
+
+        .cx-summary-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+            margin-bottom: 16px;
+        }
+        .cx-stat {
+            background: var(--surface-2); border: 1px solid var(--border-soft);
+            border-radius: var(--radius-sm); padding: 12px 14px; text-align: center;
+        }
+        .cx-stat-val {
+            font-size: 1.3rem; font-weight: 800; color: var(--text);
+        }
+        .cx-stat-label {
+            font-size: .62rem; font-weight: 700; letter-spacing: .6px;
+            text-transform: uppercase; color: var(--text-muted); margin-top: 2px;
+        }
+
+        .cx-q-list { display: flex; flex-direction: column; gap: 10px; }
+
+        .cx-q-card {
+            background: var(--surface-2); border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm); overflow: hidden;
+        }
+        .cx-q-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 11px 14px; cursor: pointer; user-select: none;
+        }
+        .cx-q-header:hover { background: var(--surface); }
+        .cx-q-left { display: flex; align-items: center; gap: 10px; }
+        .cx-q-num {
+            font-size: .66rem; font-weight: 800; letter-spacing: .6px;
+            text-transform: uppercase; color: var(--text-muted);
+        }
+        .cx-q-score {
+            font-size: .78rem; font-weight: 800; color: var(--text);
+        }
+        .cx-risk-badge {
+            font-size: .58rem; font-weight: 700; padding: 2px 10px;
+            border-radius: 8px; letter-spacing: .4px;
+        }
+        .cx-risk-badge.low      { background: var(--sage-soft); color: #2a6a50; }
+        .cx-risk-badge.moderate  { background: var(--amber-soft); color: #7a4a00; }
+        .cx-risk-badge.high     { background: var(--peach-soft); color: #b85030; }
+        .cx-risk-badge.extreme  { background: var(--rose-soft); color: #b83040; }
+
+        .cx-q-body {
+            display: none; padding: 0 14px 14px;
+            border-top: 1px solid var(--border-soft);
+        }
+        .cx-q-card.open .cx-q-body { display: block; }
+
+        .cx-meters { display: flex; flex-direction: column; gap: 9px; margin-top: 10px; }
+        .cx-meter-row { display: flex; align-items: center; gap: 10px; }
+        .cx-meter-label {
+            width: 110px; font-size: .68rem; font-weight: 700;
+            color: var(--text-muted); flex-shrink: 0;
+        }
+        .cx-meter-track {
+            flex: 1; height: 7px; background: var(--border-soft);
+            border-radius: 4px; overflow: hidden;
+        }
+        .cx-meter-fill {
+            height: 100%; border-radius: 4px; transition: width .4s ease;
+        }
+        .cx-meter-fill.green  { background: var(--sage); }
+        .cx-meter-fill.amber  { background: var(--amber); }
+        .cx-meter-fill.red    { background: var(--peach); }
+        .cx-meter-val {
+            width: 36px; text-align: right; font-size: .68rem;
+            font-weight: 800; color: var(--text-mid);
+        }
+
+        .cx-hard-words {
+            display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px;
+        }
+        .cx-hw-pill {
+            font-size: .64rem; font-weight: 700; padding: 3px 9px;
+            border-radius: 10px; background: var(--lav-soft);
+            color: #5040a0; border: 1px solid rgba(168,156,212,.3);
+        }
+        .cx-chevron {
+            font-size: .7rem; color: var(--text-muted); transition: transform .2s;
+        }
+        .cx-q-card.open .cx-chevron { transform: rotate(90deg); }
+
+        /* Risk distribution mini-bar */
+        .cx-dist-row {
+            display: flex; gap: 3px; margin-bottom: 16px;
+            height: 8px; border-radius: 4px; overflow: hidden;
+        }
+        .cx-dist-seg { height: 100%; transition: width .4s ease; }
+        .cx-dist-seg.low      { background: var(--sage); }
+        .cx-dist-seg.moderate  { background: var(--amber); }
+        .cx-dist-seg.high     { background: var(--peach); }
+        .cx-dist-seg.extreme  { background: var(--rose); }
+
+        .cx-dist-legend {
+            display: flex; gap: 14px; margin-bottom: 14px; flex-wrap: wrap;
+        }
+        .cx-dist-legend-item {
+            display: flex; align-items: center; gap: 5px;
+            font-size: .64rem; font-weight: 700; color: var(--text-muted);
+        }
+        .cx-dist-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+        }
+
+        /* ══ Page fade-in ══ */
+        .left-col > *, .right-col > * {
+            animation: fadeUp .4s ease both;
+        }
+        .left-col > *:nth-child(1) { animation-delay: .05s; }
+        .left-col > *:nth-child(2) { animation-delay: .10s; }
+        .left-col > *:nth-child(3) { animation-delay: .15s; }
+        .left-col > *:nth-child(4) { animation-delay: .20s; }
+        .left-col > *:nth-child(5) { animation-delay: .25s; }
+        .right-col > *:nth-child(1) { animation-delay: .12s; }
+        .right-col > *:nth-child(2) { animation-delay: .18s; }
+        .right-col > *:nth-child(3) { animation-delay: .24s; }
+        .right-col > *:nth-child(4) { animation-delay: .30s; }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-heading {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 4px;
+        }
+        .page-heading h1 {
+            font-family: 'Fraunces', serif;
+            font-size: 1.3rem; font-weight: 500; color: var(--text);
+        }
+        .page-heading p { font-size: .78rem; color: var(--text-muted); margin-top: 2px; }
+        .breadcrumb {
+            font-size: .7rem; color: var(--text-muted);
+            display: flex; align-items: center; gap: 5px;
+        }
+        .breadcrumb span { color: var(--peach); font-weight: 700; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="pdf_export.js"></script>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══ -->
+<nav class="sidebar">
+    <div class="sidebar-logo">
+        <div class="logo-text">LEX<em>ORA</em></div>
+        <div class="logo-sub">Admin Portal</div>
+    </div>
+
+    <div class="nav-section">
+        <div class="nav-section-label">Main</div>
+        <div class="nav-item">
+            <div class="nav-icon">🏠</div>
+            Dashboard
+        </div>
+        <div class="nav-item active">
+            <div class="nav-icon">✏️</div>
+            Create Exam
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon">📁</div>
+            Uploaded Papers
+            <span class="nav-badge">4</span>
+        </div>
+    </div>
+
+    <div class="nav-section">
+        <div class="nav-section-label">Monitoring</div>
+        <div class="nav-item">
+            <div class="nav-icon">♿</div>
+            Accessibility Settings
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon">🚨</div>
+            Violation Monitoring
+            <span class="nav-badge warn">2</span>
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon">📊</div>
+            Reports & Analytics
+        </div>
+    </div>
+
+    <div class="sidebar-footer">
+        <div class="admin-chip">
+            <div class="admin-avatar">DR</div>
+            <div class="admin-info">
+                <div class="admin-name">Dr. Reena Kapoor</div>
+                <div class="admin-role">Exam Administrator</div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- ═══ RIGHT SIDE ═══ -->
+<div class="right-side">
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+        <div class="topbar-title">Create Exam</div>
+
+        <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input class="search-input" type="text" placeholder="Search exams, students…"/>
+        </div>
+
+        <div class="topbar-right">
+            <div class="date-chip"><span id="admin-date"></span></div>
+            <div class="status-live">
+                <div class="live-dot"></div>
+                3 Active Sessions
+            </div>
+            <div class="notif-btn">
+                🔔
+                <div class="notif-dot"></div>
+            </div>
+            <div class="inst-chip">
+                <div class="inst-dot">DU</div>
+                <span class="inst-name">Delhi University</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+
+        <!-- ══ LEFT COLUMN ══ -->
+        <div class="left-col">
+
+            <!-- Page heading -->
+            <div>
+                <div class="page-heading">
+                    <div>
+                        <h1>Create New Exam</h1>
+                        <p>Upload a question paper, configure settings, and publish securely.</p>
+                    </div>
+                    <div class="breadcrumb">Admin / <span>Create Exam</span></div>
+                </div>
+            </div>
+
+            <!-- ── 1. UPLOAD ── -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title-wrap">
+                        <div class="card-icon ci-peach">📄</div>
+                        <div>
+                            <div class="card-title">Upload Question Paper</div>
+                            <div class="card-sub">PDF or DOC — text is auto-extracted and structured by AI</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="upload-zone" id="admin-drop-zone">
+                    <input type="file" accept=".pdf" id="admin-file-input"/>
+                    <div class="upload-glyph" id="admin-upload-glyph">📤</div>
+                    <div class="upload-title" id="admin-upload-title">Drop your file here, or <span>browse</span></div>
+                    <div class="upload-hint" id="admin-upload-hint">PDF only · up to 20 MB</div>
+                    <div class="fmt-row">
+                        <span class="fmt-tag">PDF</span>
+                    </div>
+                </div>
+
+                <div class="extract-status" id="extract-status" style="display:none">
+                    <div class="extract-icon" id="extract-icon">⏳</div>
+                    <div class="extract-text">
+                        <div class="extract-title" id="extract-title">Processing…</div>
+                        <div class="extract-sub" id="extract-sub">Analysing cognitive load and simplifying text</div>
+                    </div>
+                    <div class="extract-badge" id="extract-badge">Working</div>
+                </div>
+                <button id="btn-download-pdf" style="display:none;margin-top:12px;width:100%;padding:11px;border-radius:20px;background:linear-gradient(135deg,#f0a080,#f4a898);border:none;color:#fff;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(240,160,128,.35);" onclick="downloadAdminPDF()">
+                    ⬇ Download Simplified Exam PDF
+                </button>
+            </div>
+
+            <!-- ── COMPLEXITY ANALYTICS ── -->
+            <div class="card cx-panel" id="cx-panel">
+                <div class="card-header">
+                    <div class="card-title-wrap">
+                        <div class="card-icon ci-lav">📊</div>
+                        <div>
+                            <div class="card-title">Complexity Analytics</div>
+                            <div class="card-sub">Per-question cognitive load breakdown from Lexora's NLP scorer</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary stats -->
+                <div class="cx-summary-grid" id="cx-summary"></div>
+
+                <!-- Risk distribution bar -->
+                <div class="cx-dist-row" id="cx-dist-bar"></div>
+                <div class="cx-dist-legend" id="cx-dist-legend"></div>
+
+                <!-- Per-question cards -->
+                <div class="cx-q-list" id="cx-q-list"></div>
+            </div>
+
+            <!-- ── 3. EXAM CONFIG ── -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title-wrap">
+                        <div class="card-icon ci-amber">⚙️</div>
+                        <div>
+                            <div class="card-title">Exam Configuration</div>
+                            <div class="card-sub">Set duration, sections, and timing</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="config-grid">
+
+                    <div class="config-block">
+                        <div class="cfg-label">Duration</div>
+                        <div class="slider-wrap">
+                            <input type="range" class="range-slider" id="cfg-duration" min="30" max="180" value="120" style="flex:1"/>
+                            <span class="slider-val">2h</span>
+                        </div>
+                    </div>
+
+                    <div class="config-block">
+                        <div class="cfg-label">Estimated Time / Question</div>
+                        <div class="slider-wrap">
+                            <input type="range" class="range-slider" min="1" max="20" value="10" style="flex:1"/>
+                            <span class="slider-val">10m</span>
+                        </div>
+                    </div>
+
+                    <div class="config-block" style="grid-column: span 2;">
+                        <div class="cfg-label">Sections</div>
+                        <div class="section-pills">
+                            <div class="sec-pill active">Section A</div>
+                            <div class="sec-pill active">Section B</div>
+                            <div class="sec-pill active">Section C</div>
+                            <button class="sec-pill-add">+ Add Section</button>
+                        </div>
+                    </div>
+
+                    <div class="config-block">
+                        <div class="cfg-label">Question Order</div>
+                        <div class="cfg-value">Sequential</div>
+                    </div>
+
+                    <div class="config-block">
+                        <div class="cfg-label">Total Questions</div>
+                        <div class="cfg-value"><span id="admin-q-count">—</span></div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ── 4. INTEGRITY CONTROLS ── -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title-wrap">
+                        <div class="card-icon ci-rose">🔒</div>
+                        <div>
+                            <div class="card-title">Integrity Controls</div>
+                            <div class="card-sub">Enforcement settings — applied to all students</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="integrity-list">
+
+                    <div class="int-row">
+                        <div class="int-left">
+                            <div class="int-icon ci-amber">⚠️</div>
+                            <div class="int-text">
+                                <div class="int-name">Allowed Tab-Switch Violations</div>
+                                <div class="int-desc">Exam auto-submits after this limit is reached</div>
+                            </div>
+                        </div>
+                        <div class="stepper">
+                            <button class="step-btn">−</button>
+                            <span class="step-val" id="cfg-violation-limit">1</span>
+                            <button class="step-btn">+</button>
+                        </div>
+                    </div>
+
+                    <div class="int-row">
+                        <div class="int-left">
+                            <div class="int-icon ci-rose">🖥</div>
+                            <div class="int-text">
+                                <div class="int-name">Fullscreen Enforcement</div>
+                                <div class="int-desc">Student must stay fullscreen throughout</div>
+                            </div>
+                        </div>
+                        <div class="toggle" id="cfg-fullscreen"></div>
+                    </div>
+
+                    <div class="int-row">
+                        <div class="int-left">
+                            <div class="int-icon ci-peach">⏱</div>
+                            <div class="int-text">
+                                <div class="int-name">Auto-Submit on Expiry</div>
+                                <div class="int-desc">Exam submits automatically when timer ends</div>
+                            </div>
+                        </div>
+                        <div class="toggle" id="cfg-autosubmit"></div>
+                    </div>
+
+                    <div class="int-row">
+                        <div class="int-left">
+                            <div class="int-icon ci-lav">🔗</div>
+                            <div class="int-text">
+                                <div class="int-name">Copy-Paste Disabled</div>
+                                <div class="int-desc">Prevents copying from exam interface</div>
+                            </div>
+                        </div>
+                        <div class="toggle off" id="cfg-copypaste"></div>
+                    </div>
+
+                </div>
+
+                <div class="browser-check" style="margin-top:14px">
+                    <span style="font-size:1rem">🧩</span>
+                    <span class="browser-check-text">Browser compatibility check — Chrome 120+, Firefox 121+, Safari 17+</span>
+                    <span class="browser-ok">✓ All supported</span>
+                </div>
+            </div>
+
+            <!-- ── 5. ACCESSIBILITY SETTINGS ── -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title-wrap">
+                        <div class="card-icon ci-sage">♿</div>
+                        <div>
+                            <div class="card-title">Accessibility Settings</div>
+                            <div class="card-sub">These settings are applied globally for all students in this exam</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="a11y-grid">
+
+                    <div class="a11y-row">
+                        <div class="a11y-left">
+                            <div class="a11y-icon ci-peach">🔤</div>
+                            <span class="a11y-name">Dyslexia-Friendly Font</span>
+                        </div>
+                        <div class="toggle" id="a11y-font"></div>
+                    </div>
+
+                    <div class="a11y-row">
+                        <div class="a11y-left">
+                            <div class="a11y-icon ci-sage">🎧</div>
+                            <span class="a11y-name">Audio Playback</span>
+                        </div>
+                        <div class="toggle" id="a11y-audio"></div>
+                    </div>
+
+                    <div class="a11y-row">
+                        <div class="a11y-left">
+                            <div class="a11y-icon ci-lav">⚡</div>
+                            <span class="a11y-name">Speed Control</span>
+                        </div>
+                        <div class="toggle" id="a11y-speed"></div>
+                    </div>
+
+                    <div class="a11y-row">
+                        <div class="a11y-left">
+                            <div class="a11y-icon ci-amber">📐</div>
+                            <span class="a11y-name">Structured Formatting</span>
+                        </div>
+                        <div class="toggle" id="a11y-formatting"></div>
+                    </div>
+
+                    <div class="a11y-row">
+                        <div class="a11y-left">
+                            <div class="a11y-icon ci-rose">🎨</div>
+                            <span class="a11y-name">Background Tint</span>
+                        </div>
+                        <div class="toggle off" id="a11y-tint"></div>
+                    </div>
+
+                    <div class="a11y-row">
+                        <div class="a11y-left">
+                            <div class="a11y-icon ci-slate">📏</div>
+                            <span class="a11y-name">Extra Line Spacing</span>
+                        </div>
+                        <div class="toggle" id="a11y-spacing"></div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ══ RIGHT COLUMN ══ -->
+        <div class="right-col">
+
+            <!-- 7. PUBLISH -->
+            <div class="publish-card">
+                <div class="card-header" style="margin-bottom:14px">
+                    <div class="card-title-wrap">
+                        <div class="card-icon ci-peach">🚀</div>
+                        <div>
+                            <div class="card-title">Publish Exam</div>
+                            <div class="card-sub">Review checklist before going live</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pub-checklist">
+                    <div class="pub-check-item pending" id="pub-check-1">Paper uploaded and structured</div>
+                    <div class="pub-check-item pending" id="pub-check-2">AI structuring complete</div>
+                    <div class="pub-check-item pending" id="pub-check-3">Duration configured</div>
+                    <div class="pub-check-item pending" id="pub-check-4">Integrity controls set</div>
+                </div>
+
+                <div class="exam-link-box">
+                    <span class="link-icon">🔗</span>
+                    <span class="link-url"><span id="exam-link-val">Not published yet</span></span>
+                    <button class="copy-btn" id="copy-link-btn">Copy</button>
+                </div>
+
+                <div class="publish-btns">
+                    <button class="btn-publish" id="btn-publish" onclick="publishExam()">🚀 Publish Exam</button>
+                    <button class="btn-preview" onclick="transitionTo('PreExam_Dashboard.html')">👁 Preview as Student</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    // Duration slider
+    const slider = document.querySelector('input[type=range]');
+    if (slider) {
+        slider.addEventListener('input', function() {
+            const val = Math.round(this.value / 60);
+            const h = Math.floor(val); const m = (this.value % 60);
+            this.nextElementSibling.textContent = m === 0 ? h + 'h' : h + 'h ' + m + 'm';
+            const pct = ((this.value - this.min) / (this.max - this.min)) * 100;
+            this.style.background = `linear-gradient(90deg, var(--peach) ${pct}%, var(--border) ${pct}%)`;
+        });
+    }
+
+    // Toggle clicks
+    document.querySelectorAll('.toggle').forEach(t => {
+        t.addEventListener('click', () => t.classList.toggle('off'));
+    });
+
+    // Stepper
+    document.querySelectorAll('.step-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const val = btn.parentElement.querySelector('.step-val');
+            let n = parseInt(val.textContent);
+            if (btn.textContent === '+') n = Math.min(n + 1, 5);
+            else n = Math.max(n - 1, 0);
+            val.textContent = n;
+        });
+    });
+
+    // Section pills
+    document.querySelectorAll('.sec-pill').forEach(p => {
+        p.addEventListener('click', () => p.classList.toggle('active'));
+    });
+
+    // ── Publish Checklist Tracking ──────────────────────────────────────
+    function markChecklist(id) {
+        const el = document.getElementById(id);
+        if (el && !el.classList.contains('done')) {
+            el.className = 'pub-check-item done';
+        }
+    }
+
+    // Duration slider change → mark "Duration configured"
+    document.getElementById('cfg-duration').addEventListener('input', function() {
+        markChecklist('pub-check-3');
+    });
+
+    // Any integrity toggle/stepper click → mark "Integrity controls set"
+    document.querySelectorAll('.integrity-list .toggle, .integrity-list .step-btn').forEach(el => {
+        el.addEventListener('click', () => markChecklist('pub-check-4'));
+    });
+
+    // Copy button
+    document.getElementById('copy-link-btn').addEventListener('click', function() {
+        const linkText = document.getElementById('exam-link-val').textContent;
+        navigator.clipboard.writeText(linkText).catch(() => {});
+        this.textContent = '✓ Copied';
+        this.style.color = 'var(--sage)';
+        setTimeout(() => { this.textContent = 'Copy'; this.style.color = ''; }, 1800);
+    });
+
+    // ── Admin PDF Upload ───────────────────────────────────────────────────
+    const adminDropZone  = document.getElementById('admin-drop-zone');
+    const adminFileInput = document.getElementById('admin-file-input');
+    const extractStatus  = document.getElementById('extract-status');
+
+    adminDropZone.addEventListener('click', () => adminFileInput.click());
+
+    adminDropZone.addEventListener('dragover', e => {
+        e.preventDefault();
+        adminDropZone.style.borderColor = 'var(--peach)';
+        adminDropZone.style.background  = 'var(--peach-pale)';
+    });
+    adminDropZone.addEventListener('dragleave', () => {
+        adminDropZone.style.borderColor = '';
+        adminDropZone.style.background  = '';
+    });
+    adminDropZone.addEventListener('drop', e => {
+        e.preventDefault();
+        adminDropZone.style.borderColor = '';
+        adminDropZone.style.background  = '';
+        if (e.dataTransfer.files[0]) handleAdminUpload(e.dataTransfer.files[0]);
+    });
+
+    adminFileInput.addEventListener('change', () => {
+        if (adminFileInput.files[0]) handleAdminUpload(adminFileInput.files[0]);
+    });
+
+    async function handleAdminUpload(file) {
+        if (!file.name.toLowerCase().endsWith('.pdf')) {
+            alert('Please upload a PDF file.');
+            return;
+        }
+
+        // Update drop zone to show filename
+        document.getElementById('admin-upload-glyph').textContent = '📄';
+        document.getElementById('admin-upload-title').innerHTML = `<strong>${file.name}</strong>`;
+        document.getElementById('admin-upload-hint').textContent = 'Processing with Lexora engine…';
+
+        // Show status bar
+        extractStatus.style.display = 'flex';
+        document.getElementById('extract-icon').textContent  = '⏳';
+        document.getElementById('extract-title').textContent = 'Processing exam…';
+        document.getElementById('extract-sub').textContent   = 'Extracting text and analysing cognitive load';
+        document.getElementById('extract-badge').textContent = 'Working';
+        document.getElementById('extract-badge').style.background = 'var(--amber-soft)';
+        document.getElementById('extract-badge').style.color      = '#7a4a00';
+        document.getElementById('extract-badge').style.border     = '1px solid var(--amber)';
+
+        try {
+            const result = await processPDFWithProgress(file, (step, label) => {
+                document.getElementById('extract-sub').textContent = label + '…';
+            });
+
+            // Store in localStorage for Live Exam page
+            localStorage.setItem('lexora_exam', JSON.stringify(result));
+            localStorage.setItem('lexora_exam_name', file.name.replace('.pdf',''));
+
+            // Update status to success
+            document.getElementById('extract-icon').textContent  = '✅';
+            document.getElementById('extract-title').textContent = 'Exam processed successfully';
+            document.getElementById('extract-sub').textContent   =
+                `${file.name} · ${result.stats.questions_found} questions · ${result.stats.units_modified} units simplified`;
+            document.getElementById('extract-badge').textContent = 'Ready';
+            document.getElementById('extract-badge').style.background = 'var(--sage-soft)';
+            document.getElementById('extract-badge').style.color      = '#2a6a50';
+            document.getElementById('extract-badge').style.border     = '1px solid var(--sage)';
+            document.getElementById('btn-download-pdf').style.display = 'block';
+
+            document.getElementById('admin-upload-hint').textContent = 'Lexora simplification complete ✓';
+            document.getElementById('admin-q-count').textContent = result.stats.questions_found + ' Questions';
+            markChecklist('pub-check-1');
+            markChecklist('pub-check-2');
+
+            // Render complexity analytics
+            renderComplexityAnalytics(result);
+
+        } catch (err) {
+            document.getElementById('extract-icon').textContent  = '❌';
+            document.getElementById('extract-title').textContent = 'Processing failed';
+            document.getElementById('extract-sub').textContent   = err.message || 'Unknown error';
+            document.getElementById('extract-badge').textContent = 'Error';
+            document.getElementById('extract-badge').style.background = 'var(--rose-soft)';
+            document.getElementById('extract-badge').style.color      = '#b83040';
+            document.getElementById('extract-badge').style.border     = '1px solid var(--rose)';
+        }
+    }
+
+    function gatherConfig() {
+        const durationMin = parseInt(document.getElementById('cfg-duration').value);
+
+        const sections = [...document.querySelectorAll('.sec-pill.active')]
+            .map(p => p.textContent.trim());
+
+        const violationLimit = parseInt(document.getElementById('cfg-violation-limit').textContent);
+        const fullscreenEnforced = !document.getElementById('cfg-fullscreen').classList.contains('off');
+        const autoSubmit = !document.getElementById('cfg-autosubmit').classList.contains('off');
+        const copyPasteDisabled = !document.getElementById('cfg-copypaste').classList.contains('off');
+
+        const accessibility = {
+            dyslexiaFont:   !document.getElementById('a11y-font').classList.contains('off'),
+            audio:          !document.getElementById('a11y-audio').classList.contains('off'),
+            speedControl:   !document.getElementById('a11y-speed').classList.contains('off'),
+            formatting:     !document.getElementById('a11y-formatting').classList.contains('off'),
+            backgroundTint: !document.getElementById('a11y-tint').classList.contains('off'),
+            lineSpacing:    !document.getElementById('a11y-spacing').classList.contains('off'),
+        };
+
+        return {
+            duration_minutes:       durationMin,
+            sections:               sections,
+            violation_limit:        violationLimit,
+            fullscreen_enforced:    fullscreenEnforced,
+            auto_submit:            autoSubmit,
+            copy_paste_disabled:    copyPasteDisabled,
+            accessibility:          accessibility,
+            published_at:           new Date().toISOString(),
+        };
+    }
+
+    function publishExam() {
+        const exam = localStorage.getItem('lexora_exam');
+        if (!exam) {
+            alert('Please upload and process a question paper first.');
+            return;
+        }
+
+        // Gather and persist config
+        const config = gatherConfig();
+        localStorage.setItem('lexora_config', JSON.stringify(config));
+
+        // Generate exam link
+        const examName = localStorage.getItem('lexora_exam_name') || 'exam';
+        const hash = btoa(examName + '-' + Date.now()).replace(/[^a-zA-Z0-9]/g, '').slice(0, 12);
+        const link = 'Live_Exam.html?id=' + hash;
+        localStorage.setItem('lexora_exam_link', link);
+        document.getElementById('exam-link-val').textContent = link;
+
+        // Mark all checklist items done
+        ['pub-check-1','pub-check-2','pub-check-3','pub-check-4'].forEach(id => markChecklist(id));
+
+        // Visual feedback
+        const btn = document.getElementById('btn-publish');
+        btn.textContent = '✅ Published';
+        btn.style.background = 'var(--sage)';
+        btn.style.boxShadow = '0 4px 16px rgba(132,184,164,.35)';
+        btn.disabled = true;
+
+        // Update preview button to use generated link
+        document.querySelector('.btn-preview').setAttribute('onclick', "transitionTo('" + link + "')");
+    }
+
+    function downloadAdminPDF() {
+        const raw = localStorage.getItem('lexora_exam');
+        if (!raw) return;
+        const result   = JSON.parse(raw);
+        const fileName = localStorage.getItem('lexora_exam_name') || 'exam';
+        buildAndDownloadPDF(result, fileName);
+    }
+
+    // ── Complexity Analytics ──────────────────────────────────────────────
+    function renderComplexityAnalytics(result) {
+        const panel = document.getElementById('cx-panel');
+        const units = result.units || [];
+
+        // Group units by question number
+        const qMap = {};
+        units.forEach(u => {
+            const qn = u.id ? u.id.split('-')[0] : null;
+            if (!qn) return;
+            if (!qMap[qn]) qMap[qn] = [];
+            qMap[qn].push(u);
+        });
+
+        const qKeys = Object.keys(qMap).sort((a, b) => {
+            const na = parseInt(a.replace('Q',''));
+            const nb = parseInt(b.replace('Q',''));
+            return na - nb;
+        });
+
+        if (!qKeys.length) return;
+
+        // Aggregate complexity per question
+        const qData = qKeys.map(qk => {
+            const qUnits = qMap[qk];
+            let scored = 0, sumComp = 0, sumSL = 0, sumDD = 0, sumLD = 0, sumID = 0;
+            const allKeywords = [];
+            let worstRisk = 'LOW';
+
+            const riskOrder = { LOW: 0, MODERATE: 1, HIGH: 2, EXTREME: 3 };
+
+            qUnits.forEach(u => {
+                if (u.complexity && u.complexity.document) {
+                    const d = u.complexity.document;
+                    scored++;
+                    sumComp += d.composite_norm || 0;
+                    sumSL += d.sentence_length_norm || 0;
+                    sumDD += d.dependency_depth_norm || 0;
+                    sumLD += d.lexical_difficulty_norm || 0;
+                    sumID += d.info_density_norm || 0;
+                    if (riskOrder[d.risk_band] > riskOrder[worstRisk]) {
+                        worstRisk = d.risk_band;
+                    }
+                }
+                if (u.keywords) allKeywords.push(...u.keywords);
+            });
+
+            const n = scored || 1;
+            return {
+                key: qk,
+                composite: sumComp / n,
+                sentLen:   sumSL / n,
+                depDepth:  sumDD / n,
+                lexDiff:   sumLD / n,
+                infoDens:  sumID / n,
+                risk:      worstRisk,
+                keywords:  [...new Set(allKeywords)].slice(0, 6),
+                unitCount: qUnits.length,
+            };
+        });
+
+        // Summary stats
+        const avgComp = qData.reduce((s, q) => s + q.composite, 0) / qData.length;
+        const riskCounts = { LOW: 0, MODERATE: 0, HIGH: 0, EXTREME: 0 };
+        qData.forEach(q => riskCounts[q.risk]++);
+        const highRiskCount = riskCounts.HIGH + riskCounts.EXTREME;
+
+        document.getElementById('cx-summary').innerHTML =
+            `<div class="cx-stat"><div class="cx-stat-val">${qData.length}</div><div class="cx-stat-label">Questions</div></div>` +
+            `<div class="cx-stat"><div class="cx-stat-val">${(avgComp * 100).toFixed(0)}%</div><div class="cx-stat-label">Avg Complexity</div></div>` +
+            `<div class="cx-stat"><div class="cx-stat-val" style="color:${highRiskCount ? 'var(--peach)' : 'var(--sage)'}">${highRiskCount}</div><div class="cx-stat-label">High / Extreme</div></div>` +
+            `<div class="cx-stat"><div class="cx-stat-val">${units.length}</div><div class="cx-stat-label">Total Units</div></div>`;
+
+        // Risk distribution bar
+        const total = qData.length;
+        const distBar = document.getElementById('cx-dist-bar');
+        const distLegend = document.getElementById('cx-dist-legend');
+        distBar.innerHTML = '';
+        distLegend.innerHTML = '';
+        ['LOW', 'MODERATE', 'HIGH', 'EXTREME'].forEach(band => {
+            const count = riskCounts[band];
+            if (count > 0) {
+                const pct = (count / total * 100).toFixed(1);
+                distBar.innerHTML += `<div class="cx-dist-seg ${band.toLowerCase()}" style="width:${pct}%"></div>`;
+            }
+            distLegend.innerHTML += `<div class="cx-dist-legend-item"><div class="cx-dist-dot" style="background:var(--${band === 'LOW' ? 'sage' : band === 'MODERATE' ? 'amber' : band === 'HIGH' ? 'peach' : 'rose'})"></div>${band} (${riskCounts[band]})</div>`;
+        });
+
+        // Per-question cards
+        const list = document.getElementById('cx-q-list');
+        list.innerHTML = '';
+        qData.forEach(q => {
+            const riskClass = q.risk.toLowerCase();
+
+            function meterColor(v) {
+                return v < 0.4 ? 'green' : v < 0.7 ? 'amber' : 'red';
+            }
+
+            const kwHtml = q.keywords.length
+                ? `<div class="cx-hard-words">${q.keywords.map(w => `<span class="cx-hw-pill">${w}</span>`).join('')}</div>`
+                : '';
+
+            const card = document.createElement('div');
+            card.className = 'cx-q-card';
+            card.innerHTML =
+                `<div class="cx-q-header" onclick="this.parentElement.classList.toggle('open')">
+                    <div class="cx-q-left">
+                        <span class="cx-q-num">${q.key}</span>
+                        <span class="cx-q-score">${(q.composite * 100).toFixed(0)}%</span>
+                        <span class="cx-risk-badge ${riskClass}">${q.risk}</span>
+                    </div>
+                    <span class="cx-chevron">›</span>
+                </div>
+                <div class="cx-q-body">
+                    <div class="cx-meters">
+                        <div class="cx-meter-row">
+                            <span class="cx-meter-label">Sentence Length</span>
+                            <div class="cx-meter-track"><div class="cx-meter-fill ${meterColor(q.sentLen)}" style="width:${(q.sentLen * 100).toFixed(0)}%"></div></div>
+                            <span class="cx-meter-val">${(q.sentLen * 100).toFixed(0)}%</span>
+                        </div>
+                        <div class="cx-meter-row">
+                            <span class="cx-meter-label">Dependency Depth</span>
+                            <div class="cx-meter-track"><div class="cx-meter-fill ${meterColor(q.depDepth)}" style="width:${(q.depDepth * 100).toFixed(0)}%"></div></div>
+                            <span class="cx-meter-val">${(q.depDepth * 100).toFixed(0)}%</span>
+                        </div>
+                        <div class="cx-meter-row">
+                            <span class="cx-meter-label">Lexical Difficulty</span>
+                            <div class="cx-meter-track"><div class="cx-meter-fill ${meterColor(q.lexDiff)}" style="width:${(q.lexDiff * 100).toFixed(0)}%"></div></div>
+                            <span class="cx-meter-val">${(q.lexDiff * 100).toFixed(0)}%</span>
+                        </div>
+                        <div class="cx-meter-row">
+                            <span class="cx-meter-label">Info Density</span>
+                            <div class="cx-meter-track"><div class="cx-meter-fill ${meterColor(q.infoDens)}" style="width:${(q.infoDens * 100).toFixed(0)}%"></div></div>
+                            <span class="cx-meter-val">${(q.infoDens * 100).toFixed(0)}%</span>
+                        </div>
+                    </div>
+                    ${kwHtml}
+                </div>`;
+            list.appendChild(card);
+        });
+
+        // Show the panel
+        panel.classList.add('visible');
+    }
+</script>
+
+<script>
+    document.getElementById('admin-date').textContent = new Date().toLocaleDateString('en-GB', {weekday:'short', day:'numeric', month:'short', year:'numeric'});
+</script>
+
+</body>
+</html>

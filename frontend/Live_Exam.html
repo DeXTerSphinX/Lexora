@@ -1,0 +1,2202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>LEXORA — Student Exam</title>
+
+    <!-- OpenDyslexic font via CDN -->
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Fraunces:ital,wght@0,400;1,300&display=swap" rel="stylesheet"/>
+
+    <link rel="stylesheet" href="transitions.css" />
+    <script defer src="transitions.js"></script>
+
+    <style>
+        /* ── OpenDyslexic fallback stack (used everywhere) ──────────────── */
+        @font-face {
+            font-family: 'OpenDyslexic';
+            src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/OpenDyslexic-Regular.otf') format('opentype');
+            font-weight: 400;
+        }
+        @font-face {
+            font-family: 'OpenDyslexic';
+            src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/OpenDyslexic-Bold.otf') format('opentype');
+            font-weight: 700;
+        }
+
+        :root {
+            /* Palette — warm pastel, calming */
+            --bg:         #fdf7f0;
+            --surface:    #fff9f4;
+            --peach:      #f0a080;
+            --peach-soft: #fce8dc;
+            --peach-pale: #fff1ea;
+            --rose-soft:  #fddcdc;
+            --rose:       #f0a0a0;
+            --sage:       #84b8a4;
+            --sage-soft:  #d0ece4;
+            --lav:        #a89cd4;
+            --lav-soft:   #e4e0f4;
+            --amber:      #f0c060;
+            --amber-soft: #fef3d0;
+            --text:       #2e2218;
+            --text-mid:   #6b4e3c;
+            --text-muted: #a88878;
+            --border:     #ead8cc;
+            --radius:     20px;
+            --radius-sm:  12px;
+            --shadow:     0 4px 28px rgba(160,100,60,.09);
+
+            /* Dyslexia-optimised reading defaults */
+            --reading-size:    1.08rem;
+            --reading-leading: 2;
+            --reading-tracking: 0.04em;
+            --reading-word:    0.18em;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* Apply OpenDyslexic EVERYWHERE — this is a dyslexic-first app */
+        body, input, textarea, button, select {
+            font-family: 'OpenDyslexic', 'Nunito', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        /* Dyslexia reading optimisations applied globally to content text */
+        .reading-text {
+            font-size:      var(--reading-size);
+            line-height:    var(--reading-leading);
+            letter-spacing: var(--reading-tracking);
+            word-spacing:   var(--reading-word);
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ══════════════════════════════════════
+           TOP BAR
+        ══════════════════════════════════════ */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 32px;
+            background: var(--surface);
+            border-bottom: 1.5px solid var(--border);
+            position: sticky; top: 0; z-index: 20;
+            gap: 16px;
+        }
+
+        .logo {
+            font-family: 'Fraunces', serif;
+            font-size: 1.45rem;
+            letter-spacing: -0.5px;
+            color: var(--text);
+            flex-shrink: 0;
+        }
+        .logo span { color: var(--peach); }
+
+        .exam-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+        .exam-live-badge {
+            display: flex; align-items: center; gap: 6px;
+            background: var(--peach-soft);
+            border: 1px solid var(--peach);
+            color: #b85030;
+            font-size: .68rem;
+            font-weight: 700;
+            padding: 3px 12px;
+            border-radius: 20px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .live-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: #e06040;
+            animation: blink 1.3s ease-in-out infinite;
+        }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+        .exam-name {
+            font-size: .88rem;
+            font-weight: 700;
+            color: var(--text-mid);
+            letter-spacing: .01em;
+        }
+
+        .topbar-right {
+            display: flex; align-items: center; gap: 14px; flex-shrink: 0;
+        }
+        .timer-block {
+            display: flex; align-items: center; gap: 9px;
+            background: var(--rose-soft);
+            border: 1.5px solid var(--rose);
+            padding: 8px 18px;
+            border-radius: 28px;
+        }
+        .timer-icon { font-size: 1rem; }
+        .timer-val {
+            font-size: 1.02rem;
+            font-weight: 700;
+            color: #b83040;
+            letter-spacing: .05em;
+        }
+        .timer-label {
+            font-size: .65rem;
+            color: var(--text-muted);
+            letter-spacing: .8px;
+            text-transform: uppercase;
+        }
+
+        .student-chip {
+            display: flex; align-items: center; gap: 8px;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            padding: 6px 14px 6px 8px;
+            border-radius: 24px;
+        }
+        .avatar {
+            width: 30px; height: 30px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--peach), #f4c0a0);
+            display: flex; align-items: center; justify-content: center;
+            font-size: .75rem; font-weight: 700; color: #804828;
+        }
+        .student-name { font-size: .8rem; font-weight: 700; color: var(--text-mid); }
+
+        /* ══════════════════════════════════════
+           MAIN 3-COL GRID
+        ══════════════════════════════════════ */
+        .main {
+            display: grid;
+            grid-template-columns: 210px 1fr 252px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        /* ══════════════════════════════════════
+           LEFT — Question Navigator
+        ══════════════════════════════════════ */
+        .nav-sidebar {
+            background: var(--surface);
+            border-right: 1.5px solid var(--border);
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            overflow-y: auto;
+        }
+
+        .nav-header {
+            font-size: .64rem;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            padding: 0 8px 10px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 6px;
+        }
+
+        /* Progress strip */
+        .progress-strip {
+            padding: 10px 8px 14px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 8px;
+        }
+        .prog-meta {
+            display: flex; justify-content: space-between;
+            font-size: .7rem; color: var(--text-muted); margin-bottom: 7px;
+        }
+        .prog-track {
+            height: 7px; border-radius: 8px; background: var(--border); overflow: hidden;
+        }
+        .prog-fill {
+            height: 100%; width: 25%;
+            background: linear-gradient(90deg, var(--peach), #f4a898);
+            border-radius: 8px;
+        }
+
+        .q-nav-item {
+            display: flex; align-items: center; gap: 9px;
+            padding: 9px 10px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            border: 1.5px solid transparent;
+            transition: background .2s, border .2s;
+        }
+        .q-nav-item:hover { background: var(--peach-pale); }
+        .q-nav-item.active {
+            background: var(--peach-soft);
+            border-color: var(--peach);
+        }
+        .q-nav-item.done { opacity: .85; }
+
+        .qn-badge {
+            width: 28px; height: 28px; border-radius: 9px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .72rem; font-weight: 700;
+            flex-shrink: 0;
+            border: 1.5px solid var(--border);
+            background: var(--bg);
+            color: var(--text-mid);
+            transition: all .2s;
+        }
+        .q-nav-item.done  .qn-badge { background: var(--sage); border-color: var(--sage); color: #fff; }
+        .q-nav-item.active .qn-badge { background: var(--peach); border-color: var(--peach); color: #fff; }
+        .q-nav-item.flagged .qn-badge { background: var(--amber); border-color: var(--amber); color: #7a4a00; }
+
+        .qn-text {
+            font-size: .76rem;
+            color: var(--text-mid);
+            line-height: 1.4;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+        }
+        .q-nav-item.active .qn-text { color: #b85030; font-weight: 700; }
+
+        /* ══════════════════════════════════════
+           CENTER — Active Question
+        ══════════════════════════════════════ */
+        .question-area {
+            padding: 36px 44px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            overflow-y: auto;
+        }
+
+        /* Q meta row */
+        .q-meta-row {
+            display: flex; align-items: center; justify-content: space-between; gap: 16px;
+        }
+        .q-meta-left { display: flex; align-items: center; gap: 10px; }
+        .section-chip {
+            background: var(--lav-soft); border: 1px solid var(--lav);
+            color: #5040a0; font-size: .68rem; font-weight: 700;
+            padding: 4px 12px; border-radius: 16px;
+            letter-spacing: .8px; text-transform: uppercase;
+        }
+        .q-counter {
+            font-family: 'Fraunces', serif;
+            font-size: 1rem; font-style: italic; color: var(--text-muted);
+        }
+        .marks-pill {
+            background: var(--amber-soft); border: 1px solid var(--amber);
+            color: #7a4a00; font-size: .72rem; font-weight: 700;
+            padding: 4px 13px; border-radius: 14px;
+        }
+
+        /* ── AUDIO PLAYER CARD ── */
+        .audio-card {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px 22px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        .audio-card::before {
+            content: '';
+            position: absolute; left: 0; top: 0; bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, var(--peach), var(--lav));
+        }
+
+        .mic-btn {
+            width: 54px; height: 54px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--peach), #f4a898);
+            border: none; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 4px 14px rgba(240,160,128,.4);
+            transition: transform .15s, box-shadow .15s;
+        }
+        .mic-btn:hover { transform: scale(1.07); box-shadow: 0 6px 20px rgba(240,160,128,.55); }
+        .mic-btn:active { transform: scale(.95); }
+        .mic-btn svg { width: 24px; height: 24px; fill: #fff; }
+
+        .audio-body { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+
+        .audio-label {
+            font-size: .72rem;
+            font-weight: 700;
+            letter-spacing: .9px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        /* Waveform visualiser (decorative, CSS only) */
+        .waveform {
+            display: flex; align-items: center; gap: 3px; height: 28px;
+        }
+        .wave-bar {
+            width: 3px; border-radius: 3px;
+            background: var(--peach);
+            opacity: .4;
+            animation: wave 1.2s ease-in-out infinite;
+        }
+        .wave-bar.playing { opacity: 1; }
+        .wave-bar:nth-child(1)  { height: 10px; animation-delay: 0s; }
+        .wave-bar:nth-child(2)  { height: 18px; animation-delay: .1s; }
+        .wave-bar:nth-child(3)  { height: 24px; animation-delay: .2s; }
+        .wave-bar:nth-child(4)  { height: 16px; animation-delay: .3s; }
+        .wave-bar:nth-child(5)  { height: 20px; animation-delay: .15s; }
+        .wave-bar:nth-child(6)  { height: 28px; animation-delay: .05s; }
+        .wave-bar:nth-child(7)  { height: 14px; animation-delay: .25s; }
+        .wave-bar:nth-child(8)  { height: 22px; animation-delay: .35s; }
+        .wave-bar:nth-child(9)  { height: 18px; animation-delay: .1s; }
+        .wave-bar:nth-child(10) { height: 12px; animation-delay: .2s; }
+        .wave-bar:nth-child(11) { height: 20px; animation-delay: .3s; }
+        .wave-bar:nth-child(12) { height: 8px;  animation-delay: .4s; }
+        @keyframes wave {
+            0%,100% { transform: scaleY(1); }
+            50%      { transform: scaleY(.55); }
+        }
+
+        .speed-row {
+            display: flex; align-items: center; gap: 8px;
+        }
+        .speed-label { font-size: .7rem; color: var(--text-muted); font-weight: 700; }
+        .speed-btn {
+            padding: 5px 12px;
+            border-radius: 14px;
+            border: 1.5px solid var(--border);
+            background: var(--bg);
+            font-family: 'OpenDyslexic', 'Nunito', sans-serif;
+            font-size: .72rem;
+            font-weight: 700;
+            color: var(--text-mid);
+            cursor: pointer;
+            transition: all .2s;
+        }
+        .speed-btn:hover { border-color: var(--peach); color: #b85030; }
+        .speed-btn.active {
+            background: var(--peach-soft);
+            border-color: var(--peach);
+            color: #b85030;
+        }
+        .replay-btn {
+            padding: 5px 12px;
+            border-radius: 14px;
+            border: 1.5px solid var(--border);
+            background: var(--bg);
+            font-family: 'OpenDyslexic', 'Nunito', sans-serif;
+            font-size: .72rem; font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all .2s;
+            display: flex; align-items: center; gap: 5px;
+        }
+        .replay-btn:hover { border-color: var(--lav); color: #5040a0; }
+
+        /* ── QUESTION CARD ── */
+        .q-card {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px 36px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Context passage */
+        .context-box {
+            background: var(--sage-soft);
+            border: 1px solid var(--sage);
+            border-radius: var(--radius-sm);
+            padding: 16px 20px;
+        }
+        .ctx-label {
+            font-size: .65rem; font-weight: 700; letter-spacing: 1px;
+            text-transform: uppercase; color: #3a7a62; margin-bottom: 8px;
+        }
+        .ctx-text {
+            font-size:      var(--reading-size);
+            line-height:    var(--reading-leading);
+            letter-spacing: var(--reading-tracking);
+            word-spacing:   var(--reading-word);
+            color: #28604a;
+        }
+        .ctx-para {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(132,184,164,.2);
+        }
+        .ctx-para:last-child { border-bottom: none; padding-bottom: 0; }
+        .ctx-para:first-child { padding-top: 0; }
+        .ctx-para-num {
+            flex-shrink: 0;
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            background: var(--sage);
+            color: #fff;
+            font-size: .65rem;
+            font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            margin-top: 4px;
+        }
+        .ctx-para p { margin: 0; flex: 1; }
+
+        /* Main question text */
+        .q-text-block {
+            font-size:      var(--reading-size);
+            line-height:    var(--reading-leading);
+            letter-spacing: var(--reading-tracking);
+            word-spacing:   var(--reading-word);
+            color: var(--text);
+        }
+        .kw {
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: filter .15s;
+        }
+        .kw:active { filter: brightness(.88); }
+        .kw-peach  { background: var(--peach-soft); color: #b85030; }
+        .kw-lav    { background: var(--lav-soft);   color: #5040a0; }
+        .kw-sage   { background: var(--sage-soft);  color: #2a6a50; }
+        .kw-amber  { background: var(--amber-soft); color: #7a4a00; }
+        .vocab-strip {
+            display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+            margin-top: 18px; padding: 12px 16px;
+            background: var(--peach-soft);
+            border: 1.5px solid var(--peach); border-radius: 14px;
+        }
+        .vocab-label {
+            font-size: .72rem; font-weight: 800; letter-spacing: .06em;
+            text-transform: uppercase; color: #b85030; margin-right: 4px;
+            white-space: nowrap;
+        }
+        .vocab-pill {
+            padding: 3px 10px; border-radius: 20px;
+            background: #fff; border: 1.5px solid var(--peach);
+            font-size: .82rem; font-weight: 700; color: #b85030;
+            cursor: pointer;
+            transition: background .15s;
+        }
+        .vocab-pill:hover { background: var(--peach-soft); }
+
+        /* NLP chunk breakdown */
+        .chunk-divider {
+            height: 1px; background: var(--border); border-radius: 2px;
+        }
+        .chunks-label {
+            font-size: .65rem; font-weight: 700; letter-spacing: 1px;
+            text-transform: uppercase; color: var(--text-muted);
+        }
+        .chunk-list {
+            display: flex; flex-direction: column; gap: 12px;
+            list-style: none;
+        }
+        .chunk-list li {
+            display: flex; align-items: flex-start; gap: 12px;
+        }
+        .chunk-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--peach); flex-shrink: 0; margin-top: 10px;
+        }
+        .chunk-text {
+            font-size:      var(--reading-size);
+            line-height:    var(--reading-leading);
+            letter-spacing: var(--reading-tracking);
+            word-spacing:   var(--reading-word);
+            color: var(--text-mid);
+        }
+
+        /* ── ANSWER BOX ── */
+        .answer-wrap { display: flex; flex-direction: column; gap: 10px; }
+        .ans-label {
+            font-size: .65rem; font-weight: 700; letter-spacing: 1px;
+            text-transform: uppercase; color: var(--text-muted);
+        }
+        .ans-box {
+            width: 100%;
+            min-height: 130px;
+            background: var(--bg);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 18px 22px;
+            font-family: 'OpenDyslexic', 'Nunito', sans-serif;
+            font-size:      var(--reading-size);
+            line-height:    var(--reading-leading);
+            letter-spacing: var(--reading-tracking);
+            word-spacing:   var(--reading-word);
+            color: var(--text);
+            resize: vertical;
+            outline: none;
+            transition: border-color .2s;
+        }
+        .ans-box:focus { border-color: var(--peach); }
+        .ans-box::placeholder { color: var(--text-muted); font-size: .9rem; }
+
+        /* ── NAV BUTTONS ── */
+        .nav-row {
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .n-btn {
+            display: flex; align-items: center; gap: 8px;
+            padding: 11px 24px;
+            border-radius: 24px;
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            font-family: 'OpenDyslexic', 'Nunito', sans-serif;
+            font-size: .82rem; font-weight: 700;
+            color: var(--text-mid);
+            cursor: pointer;
+            transition: all .2s;
+        }
+        .n-btn:hover { background: var(--peach-pale); border-color: var(--peach); }
+        .n-btn.next {
+            background: var(--peach);
+            border-color: var(--peach);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(240,160,128,.35);
+        }
+        .n-btn.next:hover { background: #e07060; box-shadow: 0 6px 18px rgba(224,112,96,.4); }
+
+        .autosave {
+            display: flex; align-items: center; gap: 5px;
+            font-size: .72rem; color: var(--sage); font-weight: 700;
+        }
+
+        /* ══════════════════════════════════════
+           RIGHT — Status + Settings
+        ══════════════════════════════════════ */
+        .right-sidebar {
+            background: var(--surface);
+            border-left: 1.5px solid var(--border);
+            padding: 24px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            overflow-y: auto;
+        }
+
+        .r-panel {
+            background: var(--bg);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 18px;
+        }
+        .r-title {
+            font-size: .63rem; font-weight: 700; letter-spacing: 1.1px;
+            text-transform: uppercase; color: var(--text-muted);
+            margin-bottom: 14px;
+        }
+
+        /* Reading controls — always accessible, no "mode" to switch */
+        .reading-ctrl { display: flex; flex-direction: column; gap: 13px; }
+        .rc-row {
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .rc-name { font-size: .8rem; font-weight: 600; color: var(--text-mid); }
+        .rc-stepper { display: flex; align-items: center; gap: 6px; }
+        .rc-btn {
+            width: 27px; height: 27px; border-radius: 8px;
+            border: 1.5px solid var(--border); background: var(--surface);
+            font-size: .9rem; font-weight: 700; color: var(--text-mid);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all .2s; font-family: inherit;
+        }
+        .rc-btn:hover { border-color: var(--peach); color: #b85030; }
+        .rc-val { font-size: .82rem; font-weight: 700; min-width: 30px; text-align: center; }
+
+        .bg-swatches { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 4px; }
+        .bg-sw {
+            width: 28px; height: 28px; border-radius: 9px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform .15s, border .15s;
+        }
+        .bg-sw:hover { transform: scale(1.1); }
+        .bg-sw.sel { border-color: var(--peach); }
+
+        .rc-note {
+            font-size: .7rem; color: var(--text-muted); line-height: 1.5;
+            background: var(--peach-soft);
+            border-radius: 8px;
+            padding: 8px 10px;
+            border: 1px solid var(--peach);
+            color: #b85030;
+        }
+
+        /* Question map */
+        .q-map-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+        }
+        .qm-cell {
+            aspect-ratio: 1; border-radius: 9px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .7rem; font-weight: 700;
+            cursor: pointer; transition: transform .15s;
+            border: 1.5px solid transparent;
+        }
+        .qm-cell:hover { transform: scale(1.1); }
+        .qm-cell.unseen   { background: var(--border); color: var(--text-muted); }
+        .qm-cell.done     { background: var(--sage); color: #fff; }
+        .qm-cell.current  { background: var(--peach); color: #fff; box-shadow: 0 3px 10px rgba(240,160,128,.4); }
+        .qm-cell.flagged  { background: var(--amber); color: #7a4a00; }
+        .qm-cell.skipped  { background: var(--rose-soft); border-color: var(--rose); color: #b83040; }
+
+        .map-legend { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+        .ml-item { display: flex; align-items: center; gap: 4px; font-size: .65rem; color: var(--text-muted); }
+        .ml-dot  { width: 9px; height: 9px; border-radius: 3px; }
+
+        /* Integrity monitor */
+        .int-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 7px 0; border-bottom: 1px solid var(--border);
+            font-size: .8rem; color: var(--text-mid);
+        }
+        .int-row:last-child { border-bottom: none; }
+        .st-ok   { color: var(--sage); font-weight: 700; }
+        .st-warn { color: var(--peach); font-weight: 700; }
+
+        /* Violation warning bar */
+        .vio-banner {
+            background: var(--amber-soft);
+            border: 1.5px solid var(--amber);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            font-size: .78rem;
+            color: #7a4a00;
+            line-height: 1.6;
+        }
+        .vio-banner strong { display: block; margin-bottom: 2px; }
+
+        /* Submit */
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, #e07060, #f4a898);
+            border: none;
+            color: #fff;
+            font-family: 'OpenDyslexic', 'Nunito', sans-serif;
+            font-size: .88rem; font-weight: 700;
+            cursor: pointer;
+            transition: opacity .2s, transform .15s;
+            box-shadow: 0 4px 16px rgba(224,112,96,.3);
+        }
+        .submit-btn:hover { opacity: .92; transform: translateY(-1px); }
+
+        /* ══ Mode banner ══ */
+        .mode-banner {
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: .78rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+        .mode-banner.original {
+            background: rgba(240,192,96,.18);
+            border: 1.5px solid var(--amber);
+            color: #7a4a00;
+        }
+        .mode-banner.simplified {
+            background: var(--sage-soft);
+            border: 1.5px solid var(--sage);
+            color: #2a6a50;
+        }
+
+        /* ══ Unit-level change annotation ══ */
+        .unit-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: .68rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 12px;
+            letter-spacing: .3px;
+            margin-bottom: 6px;
+        }
+        .unit-tag.risk-high    { background: rgba(240,192,96,.25); border: 1px solid var(--amber); color: #7a4a00; }
+        .unit-tag.risk-extreme { background: rgba(240,160,160,.25); border: 1px solid var(--rose);  color: #a03040; }
+        .unit-tag.changed      { background: var(--sage-soft); border: 1px solid var(--sage); color: #2a6a50; }
+
+        /* ══ Raw original text view ══ */
+        .raw-text-card {
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 24px 28px;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+            font-size: .97rem;
+            line-height: 1.5;
+            letter-spacing: 0;
+            word-spacing: 0;
+            color: #1a1a1a;
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+        }
+        .raw-text-label {
+            font-family: Georgia, 'Times New Roman', Times, serif;
+            font-size: .72rem;
+            color: #999;
+            margin-bottom: 8px;
+        }
+
+        /* ══ Scrollbars ══ */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        /* ══ Before/after toggle ══ */
+        .view-toggle {
+            display: flex;
+            align-items: center;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 24px;
+            padding: 3px;
+            gap: 2px;
+        }
+        .vt-btn {
+            padding: 6px 16px;
+            border-radius: 20px;
+            border: none;
+            font-family: 'OpenDyslexic', 'Nunito', sans-serif;
+            font-size: .72rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .2s;
+            background: transparent;
+            color: var(--text-muted);
+            letter-spacing: .3px;
+        }
+        .vt-btn.active-original {
+            background: var(--lav-soft);
+            color: #5040a0;
+            border: 1px solid var(--lav);
+        }
+        .vt-btn.active-simplified {
+            background: var(--sage-soft);
+            color: #2a6a50;
+            border: 1px solid var(--sage);
+        }
+
+        /* ══ Flagged button state ══ */
+        .flagged-btn {
+            background: var(--amber-soft) !important;
+            border-color: var(--amber) !important;
+            color: #7a4a00 !important;
+        }
+
+        /* ══ Review modal ══ */
+        .review-overlay {
+            position: fixed; inset: 0;
+            background: rgba(46,34,24,.55);
+            z-index: 100;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .review-modal {
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: 0 12px 48px rgba(0,0,0,.18);
+            padding: 32px 36px;
+            max-width: 520px; width: 90%;
+            max-height: 80vh; overflow-y: auto;
+        }
+        .review-modal h2 {
+            font-size: 1.1rem; margin-bottom: 8px; color: var(--text);
+        }
+        .review-modal p {
+            font-size: .82rem; color: var(--text-mid); margin-bottom: 18px; line-height: 1.6;
+        }
+        .review-list {
+            list-style: none; padding: 0; margin: 0 0 20px;
+            display: flex; flex-direction: column; gap: 6px;
+        }
+        .review-list li {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 12px; border-radius: 10px;
+            font-size: .82rem; font-weight: 600;
+            background: var(--bg); border: 1px solid var(--border);
+            cursor: pointer; transition: background .15s;
+        }
+        .review-list li:hover { background: var(--peach-pale); }
+        .review-list .rev-badge {
+            width: 24px; height: 24px; border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .68rem; font-weight: 700; flex-shrink: 0;
+        }
+        .rev-done   .rev-badge { background: var(--sage); color: #fff; }
+        .rev-flag   .rev-badge { background: var(--amber); color: #7a4a00; }
+        .rev-empty  .rev-badge { background: var(--rose-soft); color: #b83040; border: 1px solid var(--rose); }
+        .review-btns {
+            display: flex; gap: 10px; justify-content: flex-end;
+        }
+        .review-btns button {
+            padding: 10px 22px; border-radius: 20px; border: 1.5px solid var(--border);
+            background: var(--surface); font-family: inherit; font-size: .82rem;
+            font-weight: 700; cursor: pointer; transition: all .2s;
+        }
+        .review-btns .rev-cancel:hover { border-color: var(--peach); }
+        .review-btns .rev-submit {
+            background: linear-gradient(135deg, #e07060, #f4a898);
+            border: none; color: #fff;
+            box-shadow: 0 4px 14px rgba(224,112,96,.3);
+        }
+        .review-btns .rev-submit:hover { opacity: .9; }
+
+        /* ══ Keyboard hint ══ */
+        .kb-hint {
+            font-size: .65rem; color: var(--text-muted);
+            text-align: center; padding: 8px 0 4px;
+            letter-spacing: .3px;
+        }
+        .kb-hint kbd {
+            display: inline-block;
+            padding: 1px 6px; border-radius: 4px;
+            background: var(--bg); border: 1px solid var(--border);
+            font-family: inherit; font-size: .62rem; font-weight: 700;
+        }
+
+        /* ══ Version tag ══ */
+        .ver-tag {
+            position: fixed; bottom: 12px; right: 16px;
+            background: rgba(46,34,24,.7); color: #fde8d8;
+            font-size: .62rem; font-weight: 700; padding: 4px 12px;
+            border-radius: 16px; z-index: 99; letter-spacing: .4px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ══ TOP BAR ══ -->
+<header class="topbar">
+    <div class="logo">LEX<span>ORA</span></div>
+
+    <div class="exam-info">
+        <div class="exam-live-badge">
+            <div class="live-dot"></div>
+            Live Exam
+        </div>
+        <div class="exam-name" id="exam-name">Biology — Unit 3 Mid-Term Examination</div>
+    </div>
+
+    <div class="topbar-right">
+        <div class="timer-block">
+            <div class="timer-icon">⏱</div>
+            <div>
+                <div class="timer-val" id="timer-display">--:--:--</div>
+                <div class="timer-label">remaining</div>
+            </div>
+        </div>
+        <div class="view-toggle" id="view-toggle">
+            <button class="vt-btn" id="vt-original" onclick="setViewMode('original')">Original</button>
+            <button class="vt-btn active-simplified" id="vt-simplified" onclick="setViewMode('simplified')">Simplified ✦</button>
+        </div>
+        <div class="student-chip">
+            <div class="avatar">AS</div>
+            <span class="student-name">Aryan S.</span>
+        </div>
+    </div>
+</header>
+
+<!-- ══ MAIN GRID ══ -->
+<div class="main">
+
+    <!-- ── LEFT: Navigator ── -->
+    <aside class="nav-sidebar" id="nav-sidebar">
+        <div class="nav-header">Questions</div>
+
+        <div class="progress-strip">
+            <div class="prog-meta">
+                <span>Answered</span>
+                <span>3 / 12</span>
+            </div>
+            <div class="prog-track"><div class="prog-fill"></div></div>
+        </div>
+
+        <div class="q-nav-item done">
+            <div class="qn-badge">1</div>
+            <div class="qn-text">Cell membrane</div>
+        </div>
+        <div class="q-nav-item done">
+            <div class="qn-badge">2</div>
+            <div class="qn-text">Osmosis</div>
+        </div>
+        <div class="q-nav-item done">
+            <div class="qn-badge">3</div>
+            <div class="qn-text">Role of ATP</div>
+        </div>
+        <div class="q-nav-item active">
+            <div class="qn-badge">4</div>
+            <div class="qn-text">Mitosis vs Meiosis</div>
+        </div>
+        <div class="q-nav-item">
+            <div class="qn-badge">5</div>
+            <div class="qn-text">Photosynthesis stages</div>
+        </div>
+        <div class="q-nav-item">
+            <div class="qn-badge">6</div>
+            <div class="qn-text">DNA replication</div>
+        </div>
+        <div class="q-nav-item flagged">
+            <div class="qn-badge">7</div>
+            <div class="qn-text">Enzyme specificity</div>
+        </div>
+        <div class="q-nav-item">
+            <div class="qn-badge">8</div>
+            <div class="qn-text">Respiration types</div>
+        </div>
+        <div class="q-nav-item">
+            <div class="qn-badge">9</div>
+            <div class="qn-text">Gene mutations</div>
+        </div>
+        <div class="q-nav-item">
+            <div class="qn-badge">10</div>
+            <div class="qn-text">Natural selection</div>
+        </div>
+        <div class="q-nav-item">
+            <div class="qn-badge">11</div>
+            <div class="qn-text">Homeostasis</div>
+        </div>
+        <div class="q-nav-item">
+            <div class="qn-badge">12</div>
+            <div class="qn-text">Inheritance patterns</div>
+        </div>
+    </aside>
+
+    <!-- ── CENTER: Question ── -->
+    <main class="question-area" id="question-area">
+
+        <!-- Meta row -->
+        <div class="q-meta-row">
+            <div class="q-meta-left">
+                <span class="section-chip">Section B</span>
+                <span class="q-counter">Question 4 of 12</span>
+            </div>
+            <span class="marks-pill">✦ 8 marks</span>
+        </div>
+
+        <!-- 🎙 Audio Card — per question -->
+        <div class="audio-card">
+            <button class="mic-btn" title="Listen to this question">
+                <!-- Microphone SVG -->
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 1a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4z"/>
+                    <path d="M19 10a7 7 0 0 1-14 0"/>
+                    <line x1="12" y1="19" x2="12" y2="23" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="8" y1="23" x2="16" y2="23" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+
+            <div class="audio-body">
+                <div class="audio-label">🎧 Listen to Question 4</div>
+                <div class="waveform">
+                    <div class="wave-bar"></div><div class="wave-bar"></div>
+                    <div class="wave-bar"></div><div class="wave-bar"></div>
+                    <div class="wave-bar"></div><div class="wave-bar"></div>
+                    <div class="wave-bar"></div><div class="wave-bar"></div>
+                    <div class="wave-bar"></div><div class="wave-bar"></div>
+                    <div class="wave-bar"></div><div class="wave-bar"></div>
+                </div>
+                <div class="speed-row">
+                    <span class="speed-label">Speed:</span>
+                    <button class="speed-btn">0.75×</button>
+                    <button class="speed-btn active">1×</button>
+                    <button class="speed-btn">1.25×</button>
+                    <button class="replay-btn">↺ Replay</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question Card -->
+        <div class="q-card">
+
+            <!-- Context box -->
+            <div class="context-box">
+                <div class="ctx-label">📋 Background — Read this first</div>
+                <div class="ctx-text">
+                    Cell division is a fundamental process in all living organisms. Two main types exist in eukaryotes — each with a distinct purpose and outcome. Both begin from a single parent cell.
+                </div>
+            </div>
+
+            <!-- Question body (NLP formatted) -->
+            <div class="q-text-block">
+                Compare and contrast <span class="kw kw-peach">mitosis</span> and
+                <span class="kw kw-lav">meiosis</span>.
+                Explain how the <span class="kw kw-sage">purpose</span> of each process differs,
+                and describe <span class="kw kw-amber">one stage</span> from each where chromosomes behave differently.
+            </div>
+
+            <div class="chunk-divider"></div>
+
+            <!-- Chunked sub-questions (NLP breakdown) -->
+            <div class="chunks-label">This question is asking you to:</div>
+            <ul class="chunk-list">
+                <li>
+                    <div class="chunk-dot"></div>
+                    <div class="chunk-text">What is the <strong>main purpose</strong> of mitosis and where in the body does it happen?</div>
+                </li>
+                <li>
+                    <div class="chunk-dot"></div>
+                    <div class="chunk-text">What is the <strong>main purpose</strong> of meiosis and what does it produce?</div>
+                </li>
+                <li>
+                    <div class="chunk-dot"></div>
+                    <div class="chunk-text">Pick <strong>one stage</strong> from each process — explain how chromosomes behave differently at that stage.</div>
+                </li>
+            </ul>
+
+        </div>
+
+        <!-- Answer area -->
+        <div class="answer-wrap">
+            <div class="ans-label">Your Answer</div>
+            <textarea class="ans-box" placeholder="Take your time. Tap the microphone above to hear the question again whenever you need…"></textarea>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav-row">
+            <button class="n-btn">← Previous</button>
+            <div class="autosave">✓ Saved just now</div>
+            <button class="n-btn next">Next Question →</button>
+        </div>
+
+    </main>
+
+    <!-- ── RIGHT: Sidebar ── -->
+    <aside class="right-sidebar">
+
+        <!-- Reading settings — baked in, not optional -->
+        <div class="r-panel">
+            <div class="r-title">Reading Comfort</div>
+            <div class="reading-ctrl">
+
+                <div class="rc-row">
+                    <span class="rc-name">Text Size</span>
+                    <div class="rc-stepper">
+                        <button class="rc-btn">−</button>
+                        <span class="rc-val">17</span>
+                        <button class="rc-btn">+</button>
+                    </div>
+                </div>
+
+                <div class="rc-row">
+                    <span class="rc-name">Line Height</span>
+                    <div class="rc-stepper">
+                        <button class="rc-btn">−</button>
+                        <span class="rc-val">2.0</span>
+                        <button class="rc-btn">+</button>
+                    </div>
+                </div>
+
+                <div class="rc-row">
+                    <span class="rc-name">Letter Gap</span>
+                    <div class="rc-stepper">
+                        <button class="rc-btn">−</button>
+                        <span class="rc-val">0.04</span>
+                        <button class="rc-btn">+</button>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="rc-name" style="margin-bottom:8px">Background Tint</div>
+                    <div class="bg-swatches">
+                        <div class="bg-sw sel" style="background:#fdf7f0" title="Warm cream"></div>
+                        <div class="bg-sw" style="background:#f0f6f3" title="Soft mint"></div>
+                        <div class="bg-sw" style="background:#f4f0f8" title="Lavender"></div>
+                        <div class="bg-sw" style="background:#fff8e6" title="Amber tint"></div>
+                        <div class="bg-sw" style="background:#1e1e2c; border:1.5px solid #444" title="Dark"></div>
+                    </div>
+                </div>
+
+                <div class="rc-note">
+                    <strong>OpenDyslexic font</strong> is always active on LEXORA — designed to make reading easier for you.
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Question Map -->
+        <div class="r-panel">
+            <div class="r-title">Question Map</div>
+            <div class="q-map-grid" id="q-map-grid">
+                <div class="qm-cell done">1</div>
+                <div class="qm-cell done">2</div>
+                <div class="qm-cell done">3</div>
+                <div class="qm-cell current">4</div>
+                <div class="qm-cell unseen">5</div>
+                <div class="qm-cell unseen">6</div>
+                <div class="qm-cell flagged">7</div>
+                <div class="qm-cell unseen">8</div>
+                <div class="qm-cell unseen">9</div>
+                <div class="qm-cell skipped">10</div>
+                <div class="qm-cell unseen">11</div>
+                <div class="qm-cell unseen">12</div>
+            </div>
+            <div class="map-legend">
+                <div class="ml-item"><div class="ml-dot" style="background:var(--sage)"></div>Done</div>
+                <div class="ml-item"><div class="ml-dot" style="background:var(--peach)"></div>Here</div>
+                <div class="ml-item"><div class="ml-dot" style="background:var(--amber)"></div>Flagged</div>
+                <div class="ml-item"><div class="ml-dot" style="background:var(--rose-soft);border:1px solid var(--rose)"></div>Skipped</div>
+                <div class="ml-item"><div class="ml-dot" style="background:var(--border)"></div>Not seen</div>
+            </div>
+        </div>
+
+        <!-- Violation warning -->
+        <div class="vio-banner" id="vio-banner" style="display:none"></div>
+
+        <!-- Session monitor -->
+        <div class="r-panel">
+            <div class="r-title">Session Status</div>
+            <div class="int-row"><span>Fullscreen</span><span class="st-ok" id="st-fullscreen">● Active</span></div>
+            <div class="int-row"><span>Tab Focus</span><span class="st-ok" id="st-tabfocus">● Secure</span></div>
+            <div class="int-row"><span>Violations</span><span class="st-ok" id="st-violations">0 / 1</span></div>
+            <div class="int-row"><span>Connection</span><span class="st-ok">● Stable</span></div>
+        </div>
+
+        <!-- Submit -->
+        <button class="submit-btn" onclick="showReviewModal()">Submit Exam</button>
+
+    </aside>
+
+</div>
+
+<div class="ver-tag">LEXORA — Student Dashboard v3</div>
+
+<script>
+// ── Dynamic Exam Loader ────────────────────────────────────────────────────
+// Reads processed exam data from localStorage (set by Admin Portal)
+// and replaces hardcoded content with real questions.
+
+// Fallback in case no exam is loaded (demo mode) — toggle is a no-op
+window.setViewMode = function() {};
+
+(function () {
+    const raw = localStorage.getItem('lexora_exam');
+    if (!raw) return; // Fall back to demo content if no exam loaded
+
+    const exam     = JSON.parse(raw);
+    const examName = localStorage.getItem('lexora_exam_name') || 'Exam';
+    const units    = exam.units || [];
+
+    // Build lookup from question number → raw parsed text (pre-cleaning, pre-transformation)
+    const rawByNum = {};
+    (exam.raw_questions || []).forEach(rq => { rawByNum[rq.number] = rq.text; });
+
+    // Update exam name in topbar
+    document.getElementById('exam-name').textContent = examName;
+
+    // ── Group units by question ID prefix (Q1, Q2, …) ──────────────────
+    const groups = {}; // { "Q1": { header, passage, instruction, subquestions:[] } }
+
+    units.forEach(unit => {
+        const match = unit.id.match(/^(Q\d+)/);
+        if (!match) return;
+        const qKey = match[1];
+
+        if (!groups[qKey]) {
+            groups[qKey] = { key: qKey, header: null, passage: null, instruction: null, subquestions: [] };
+        }
+
+        if (unit.type === 'header')      groups[qKey].header      = unit;
+        else if (unit.type === 'passage')    groups[qKey].passage     = unit;
+        else if (unit.type === 'instruction') groups[qKey].instruction = unit;
+        else if (unit.type === 'subquestion') groups[qKey].subquestions.push(unit);
+    });
+
+    const qKeys  = Object.keys(groups);
+    const total  = qKeys.length;
+    let current  = 0; // index into qKeys
+    const answered = new Set();
+    let viewMode = 'simplified'; // 'simplified' | 'original'
+
+    // Returns the right text for a unit based on current viewMode
+    function pick(unit, fallback) {
+        if (!unit) return fallback || '';
+        return viewMode === 'original'
+            ? (unit.original || unit.modified || fallback || '')
+            : (unit.modified || unit.original || fallback || '');
+    }
+
+    window.setViewMode = function(mode) {
+        viewMode = mode;
+        document.getElementById('vt-original').className   = 'vt-btn' + (mode === 'original'   ? ' active-original'   : '');
+        document.getElementById('vt-simplified').className = 'vt-btn' + (mode === 'simplified' ? ' active-simplified' : '');
+        renderQuestion();
+    };
+
+    // ── Build nav sidebar ────────────────────────────────────────────────
+    function buildNav() {
+        const sidebar = document.getElementById('nav-sidebar');
+        sidebar.innerHTML = `
+            <div class="nav-header">Questions</div>
+            <div class="progress-strip">
+                <div class="prog-meta">
+                    <span>Answered</span>
+                    <span id="prog-count">${answered.size} / ${total}</span>
+                </div>
+                <div class="prog-track">
+                    <div class="prog-fill" id="prog-fill" style="width:${(answered.size/total*100).toFixed(0)}%"></div>
+                </div>
+            </div>
+        `;
+
+        qKeys.forEach((key, idx) => {
+            const g   = groups[key];
+            const num = key.replace('Q','');
+            const label = g.header ? g.header.modified || g.header.original || `Question ${num}` : `Question ${num}`;
+            const preview = label.length > 28 ? label.slice(0, 28) + '…' : label;
+
+            const cls = [
+                'q-nav-item',
+                answered.has(key) ? 'done' : '',
+                flagged.has(key)  ? 'flagged' : '',
+                idx === current   ? 'active' : ''
+            ].filter(Boolean).join(' ');
+
+            const item = document.createElement('div');
+            item.className = cls;
+            item.dataset.idx = idx;
+            item.innerHTML = `<div class="qn-badge">${num}</div><div class="qn-text">${preview}</div>`;
+            item.addEventListener('click', () => { current = idx; renderQuestion(); });
+            sidebar.appendChild(item);
+        });
+
+        // Keyboard hint at bottom
+        const hint = document.createElement('div');
+        hint.className = 'kb-hint';
+        hint.innerHTML = '<kbd>←</kbd> <kbd>→</kbd> navigate &nbsp; <kbd>F</kbd> flag &nbsp; <kbd>1-9</kbd> jump';
+        sidebar.appendChild(hint);
+    }
+
+    // ── Build question map ────────────────────────────────────────────────
+    function buildMap() {
+        const grid = document.getElementById('q-map-grid');
+        grid.innerHTML = '';
+        qKeys.forEach((key, idx) => {
+            const num = key.replace('Q','');
+            const cls = [
+                'qm-cell',
+                answered.has(key) ? 'done' : '',
+                flagged.has(key)  ? 'flagged' : '',
+                idx === current   ? 'current' : 'unseen'
+            ].filter(Boolean).join(' ');
+            const cell = document.createElement('div');
+            cell.className = cls.replace('unseen current','current').replace('unseen flagged','flagged'); // fix overlap
+            cell.textContent = num;
+            cell.addEventListener('click', () => { current = idx; renderQuestion(); });
+            grid.appendChild(cell);
+        });
+    }
+
+    // ── Render current question ───────────────────────────────────────────
+    function renderQuestion() {
+        const g      = groups[qKeys[current]];
+        const num    = qKeys[current].replace('Q','');
+        const header = pick(g.header);
+        const marks  = g.header ? (g.header.marks || '') : '';
+
+        let html = `
+            <div class="q-meta-row">
+                <div class="q-meta-left">
+                    <span class="section-chip">Question ${num}</span>
+                    <span class="q-counter">Question ${current + 1} of ${total}</span>
+                </div>
+                ${marks ? `<span class="marks-pill">✦ ${marks} marks</span>` : ''}
+            </div>
+        `;
+
+        // ── Mode banner ─────────────────────────────────────────────────────
+        const allUnits = [g.header, g.passage, g.instruction, ...g.subquestions].filter(Boolean);
+        const changedCount = allUnits.filter(u => u.changed).length;
+        const highRiskCount = allUnits.filter(u => u.risk_before === 'HIGH' || u.risk_before === 'EXTREME').length;
+
+        if (viewMode === 'simplified') {
+            const desc = changedCount > 0
+                ? `<strong>${changedCount}</strong> section${changedCount !== 1 ? 's' : ''} simplified for dyslexic-friendly reading`
+                : 'All text was already clear — nothing was changed in this question';
+            html += `<div class="mode-banner simplified">✦ Lexora Simplified &nbsp;—&nbsp; ${desc}</div>`;
+        }
+
+        // Audio card
+        html += `
+            <div class="audio-card">
+                <button class="mic-btn" title="Listen to this question" onclick="readQuestion(this)">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 1a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4z"/>
+                        <path d="M19 10a7 7 0 0 1-14 0"/>
+                        <line x1="12" y1="19" x2="12" y2="23" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+                        <line x1="8" y1="23" x2="16" y2="23" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <div class="audio-body">
+                    <div class="audio-label">🎧 Listen to Question ${num}</div>
+                    <div class="waveform">
+                        ${Array.from({length:12}, () => '<div class="wave-bar"></div>').join('')}
+                    </div>
+                    <div class="speed-row">
+                        <span class="speed-label">Speed:</span>
+                        <button class="speed-btn" onclick="setSpeed(0.75,this)">0.75×</button>
+                        <button class="speed-btn active" onclick="setSpeed(1,this)">1×</button>
+                        <button class="speed-btn" onclick="setSpeed(1.25,this)">1.25×</button>
+                        <button class="replay-btn" onclick="replayQuestion()">↺ Replay</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Question card
+        // In original mode: show the raw PDF text for this question
+        // In simplified mode: show the full structured Lexora view
+        if (viewMode === 'original' && rawByNum[num]) {
+            html += `
+                <div class="raw-text-label">Original exam paper — as parsed from PDF</div>
+                <div class="raw-text-card">${escHtml(rawByNum[num])}</div>`;
+        } else {
+
+        html += `<div class="q-card">`;
+
+        // Passage as context box
+        if (g.passage && (g.passage.modified || g.passage.original)) {
+            const paras = pick(g.passage)
+                .split(/(?<=\S)\s+(?=[1-9]\d*\s+[A-Z])/)
+                .map(l => l.trim().replace(/^\d+\s+/, ''))
+                .filter(l => l.length > 10);
+            const parasHtml = paras.map((p, i) => `
+                <div class="ctx-para">
+                    <span class="ctx-para-num">${i + 1}</span>
+                    <p class="ctx-text">${highlight(p, g.passage.keywords)}</p>
+                </div>`).join('');
+            html += `
+                <div class="context-box">
+                    <div class="ctx-label">📋 Read this passage first</div>
+                    ${parasHtml}
+                </div>
+            `;
+        }
+
+        // Header as main question text
+        if (g.header) {
+            const risk = g.header.risk_before;
+            const changed = g.header.changed;
+            if (viewMode === 'original' && (risk === 'HIGH' || risk === 'EXTREME')) {
+                html += `<div class="unit-tag risk-${risk.toLowerCase()}">⚠ ${risk} cognitive load</div>`;
+            } else if (viewMode === 'simplified' && changed) {
+                html += `<div class="unit-tag changed">✦ Simplified</div>`;
+            }
+        }
+        html += `<div class="q-text-block">${highlight(header, g.header && g.header.keywords)}</div>`;
+
+        // Instruction
+        if (g.instruction && (g.instruction.modified || g.instruction.original)) {
+            html += `<div class="q-text-block" style="font-size:.88rem;color:var(--text-mid)">${highlight(pick(g.instruction), g.instruction.keywords)}</div>`;
+        }
+
+        // Subquestions as chunk list
+        if (g.subquestions.length > 0) {
+            html += `<div class="chunk-divider"></div>`;
+            html += `<div class="chunks-label">This question asks you to:</div>`;
+            html += `<ul class="chunk-list">`;
+            g.subquestions.forEach(sq => {
+                const text = pick(sq);
+                const label = sq.id.match(/(\([^)]+\))/) ? sq.id.match(/(\([^)]+\))/)[1] : '';
+                const display = text
+                    ? highlight(text, sq.keywords)
+                    : `<em style="color:var(--text-mid);opacity:.6">[Question text unavailable from PDF]</em>`;
+
+                const sqRisk = sq.risk_before;
+                let sqTag = '';
+                if (viewMode === 'original' && (sqRisk === 'HIGH' || sqRisk === 'EXTREME')) {
+                    sqTag = `<span class="unit-tag risk-${sqRisk.toLowerCase()}" style="margin-bottom:2px;">⚠ ${sqRisk}</span><br>`;
+                } else if (viewMode === 'simplified' && sq.changed) {
+                    sqTag = `<span class="unit-tag changed" style="margin-bottom:2px;">✦ Simplified</span><br>`;
+                }
+
+                html += `
+                    <li>
+                        <div class="chunk-dot"></div>
+                        <div class="chunk-text">${sqTag}<strong>${label}</strong> ${display}</div>
+                    </li>
+                `;
+            });
+            html += `</ul>`;
+        }
+
+        // Vocabulary strip — all unique hard words from this question
+        const allKws = [
+            ...(g.header      && g.header.keywords      || []),
+            ...(g.passage     && g.passage.keywords     || []),
+            ...(g.instruction && g.instruction.keywords || []),
+            ...g.subquestions.flatMap(sq => sq.keywords || []),
+        ];
+        const uniqueKws = [...new Set(allKws.map(w => w.toLowerCase()))].slice(0, 8);
+        if (uniqueKws.length) {
+            const pills = uniqueKws.map(w => `<span class="vocab-pill" onclick="speakWord(this)">${escHtml(w)}</span>`).join('');
+            html += `
+                <div class="vocab-strip">
+                    <span class="vocab-label">Hard words</span>
+                    ${pills}
+                </div>`;
+        }
+
+        html += `</div>`; // end q-card
+
+        } // end original/simplified conditional
+
+        // Answer area
+        html += `
+            <div class="answer-wrap">
+                <div class="ans-label">Your Answer</div>
+                <textarea class="ans-box" id="ans-${qKeys[current]}"
+                    placeholder="Take your time. Tap the microphone above to hear the question again…"
+                    oninput="markAnswered()">${getAnswer(qKeys[current])}</textarea>
+            </div>
+        `;
+
+        // Nav buttons + flag
+        const isFlagged = flagged.has(qKeys[current]);
+        html += `
+            <div class="nav-row">
+                <button class="n-btn" onclick="goTo(${current - 1})" ${current === 0 ? 'disabled' : ''}>← Previous</button>
+                <div style="display:flex;align-items:center;gap:12px">
+                    <button class="n-btn${isFlagged ? ' flagged-btn' : ''}" onclick="toggleFlag()" title="Flag for review">
+                        ${isFlagged ? '⚑ Flagged' : '⚐ Flag'}
+                    </button>
+                    <div class="autosave" id="autosave-status">✓ Saved</div>
+                </div>
+                <button class="n-btn next" onclick="goTo(${current + 1})" ${current === total - 1 ? 'disabled' : ''}>Next Question →</button>
+            </div>
+        `;
+
+        document.getElementById('question-area').innerHTML = html;
+        buildNav();
+        buildMap();
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────
+    function escHtml(str) {
+        return String(str)
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;');
+    }
+
+    function highlight(text, keywords) {
+        if (!keywords || !keywords.length) return escHtml(text);
+        let safe = escHtml(text);
+        keywords.forEach(word => {
+            const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const re = new RegExp('\\b(' + escaped + ')\\b', 'gi');
+            safe = safe.replace(re, '<span class="kw kw-peach" onclick="speakWord(this)">$1</span>');
+        });
+        return safe;
+    }
+
+    // ── TTS Voice Selection ──────────────────────────────────
+    // Prefer natural-sounding voices over the robotic defaults.
+    let _ttsVoice = null;
+
+    const PREFERRED_VOICES = [
+        'microsoft jenny online',   // Edge — natural en-US
+        'microsoft aria online',    // Edge — natural en-US
+        'google us english',        // Chrome
+        'google uk english female', // Chrome
+        'samantha',                 // macOS
+        'microsoft jenny',          // Windows offline fallback
+        'microsoft zira',           // Windows offline fallback
+    ];
+
+    function pickBestVoice() {
+        const voices = window.speechSynthesis.getVoices();
+        if (!voices.length) return;
+
+        // Try preferred voices in order
+        for (const pref of PREFERRED_VOICES) {
+            const match = voices.find(v => v.name.toLowerCase().includes(pref));
+            if (match) { _ttsVoice = match; return; }
+        }
+
+        // Fallback: first English voice
+        const english = voices.find(v => v.lang.startsWith('en'));
+        if (english) _ttsVoice = english;
+    }
+
+    // Voices load asynchronously in some browsers
+    pickBestVoice();
+    window.speechSynthesis.onvoiceschanged = pickBestVoice;
+
+    function _applyVoice(utterance) {
+        if (_ttsVoice) utterance.voice = _ttsVoice;
+    }
+
+    window.speakWord = function(el) {
+        const word = el.textContent;
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(word);
+        u.rate = 0.85;
+        _applyVoice(u);
+        window.speechSynthesis.speak(u);
+    };
+
+    // ── Persistence Layer ─────────────────────────────────────────────────
+    const STORAGE_PREFIX = 'lexora_';
+    function _save(key, val) { try { localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(val)); } catch(e){} }
+    function _load(key, fallback) { try { const v = localStorage.getItem(STORAGE_PREFIX + key); return v ? JSON.parse(v) : fallback; } catch(e){ return fallback; } }
+
+    const answers = _load('answers', {});
+    const flagged = new Set(_load('flagged', []));
+    current = _load('position', 0);
+    if (current >= total) current = 0;
+
+    // Restore answered state from saved answers
+    Object.keys(answers).forEach(k => { if (answers[k].trim()) answered.add(k); });
+
+    function getAnswer(key) { return answers[key] || ''; }
+
+    function _autosave() {
+        _save('answers', answers);
+        _save('flagged', [...flagged]);
+        _save('position', current);
+        const el = document.getElementById('autosave-status');
+        if (el) el.textContent = '✓ Saved just now';
+    }
+
+    // Debounced autosave on typing
+    let _saveTimer = null;
+    window.markAnswered = function() {
+        const ta = document.getElementById('ans-' + qKeys[current]);
+        if (ta) {
+            answers[qKeys[current]] = ta.value;
+            if (ta.value.trim()) answered.add(qKeys[current]);
+            else answered.delete(qKeys[current]);
+        }
+        clearTimeout(_saveTimer);
+        _saveTimer = setTimeout(_autosave, 400);
+    };
+
+    window.goTo = function(idx) {
+        if (idx < 0 || idx >= total) return;
+        _autosave();
+        current = idx;
+        renderQuestion();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // ── Flag toggle ──────────────────────────────────────────────────────
+    window.toggleFlag = function() {
+        const key = qKeys[current];
+        if (flagged.has(key)) flagged.delete(key);
+        else flagged.add(key);
+        _autosave();
+        renderQuestion();
+    };
+
+    // TTS helpers
+    let utterance = null;
+    let _isSpeaking = false;
+
+    window.readQuestion = function(btn) {
+        // Pause/resume toggle
+        if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+            window.speechSynthesis.pause();
+            _isSpeaking = false;
+            _setWavePlaying(false);
+            return;
+        }
+        if (window.speechSynthesis.paused) {
+            window.speechSynthesis.resume();
+            _isSpeaking = true;
+            _setWavePlaying(true);
+            return;
+        }
+
+        const g = groups[qKeys[current]];
+        const text = [
+            g.passage?.modified || g.passage?.original || '',
+            g.header?.modified || g.header?.original || '',
+            g.instruction?.modified || '',
+            ...g.subquestions.map(s => s.modified || s.original || '')
+        ].filter(Boolean).join('. ');
+
+        utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = window._ttsRate || 1;
+        _applyVoice(utterance);
+
+        utterance.onstart = function() { _isSpeaking = true; _setWavePlaying(true); };
+        utterance.onend   = function() { _isSpeaking = false; _setWavePlaying(false); };
+        utterance.onpause = function() { _setWavePlaying(false); };
+        utterance.onresume = function() { _setWavePlaying(true); };
+
+        window.speechSynthesis.speak(utterance);
+    };
+
+    function _setWavePlaying(playing) {
+        document.querySelectorAll('.wave-bar').forEach(b => {
+            if (playing) b.classList.add('playing');
+            else b.classList.remove('playing');
+        });
+    }
+
+    window.replayQuestion = function() {
+        window.speechSynthesis.cancel();
+        _isSpeaking = false;
+        _setWavePlaying(false);
+        setTimeout(() => window.readQuestion(), 50);
+    };
+
+    window.setSpeed = function(rate, btn) {
+        window._ttsRate = rate;
+        btn.closest('.speed-row').querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        if (utterance) utterance.rate = rate;
+    };
+
+    // ── Keyboard Navigation ─────────────────────────────────────────────────
+    document.addEventListener('keydown', function(e) {
+        // Don't intercept when typing in textarea
+        if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+
+        switch(e.key) {
+            case 'ArrowLeft':
+                e.preventDefault();
+                goTo(current - 1);
+                break;
+            case 'ArrowRight':
+                e.preventDefault();
+                goTo(current + 1);
+                break;
+            case 'f':
+            case 'F':
+                e.preventDefault();
+                toggleFlag();
+                break;
+            case '1': case '2': case '3': case '4': case '5':
+            case '6': case '7': case '8': case '9':
+                if (!e.ctrlKey && !e.altKey && !e.metaKey) {
+                    const idx = parseInt(e.key) - 1;
+                    if (idx < total) { e.preventDefault(); goTo(idx); }
+                }
+                break;
+        }
+    });
+
+    // ── Initial render ────────────────────────────────────────────────────
+    renderQuestion();
+
+})();
+</script>
+
+<!-- ── Analytics Tracker ──────────────────────────────────────────────── -->
+<script>
+(function() {
+    const examRaw = localStorage.getItem('lexora_exam');
+    if (!examRaw) return; // No exam loaded — skip tracking
+
+    const exam = JSON.parse(examRaw);
+    const units = exam.units || [];
+    const examName = localStorage.getItem('lexora_exam_name') || 'Exam';
+
+    // Build qKeys (same grouping as main IIFE)
+    const seen = {};
+    units.forEach(u => {
+        const m = u.id.match(/^(Q\d+)/);
+        if (m) seen[m[1]] = true;
+    });
+    const qKeys = Object.keys(seen);
+    if (!qKeys.length) return;
+
+    // Load or init analytics
+    let analytics;
+    const saved = localStorage.getItem('lexora_analytics');
+    if (saved) {
+        analytics = JSON.parse(saved);
+        // Reset if different exam
+        if (analytics.exam_name !== examName) analytics = null;
+    }
+
+    if (!analytics) {
+        analytics = {
+            exam_name: examName,
+            started_at: Date.now(),
+            questions: {},
+            global: { total_tts_clicks: 0, total_time_ms: 0 }
+        };
+        qKeys.forEach(k => {
+            analytics.questions[k] = {
+                time_spent_ms: 0, visits: 0, revision_count: 0,
+                tts_count: 0, flagged: false, answered: false, answer_length: 0
+            };
+        });
+    }
+
+    function _persist() {
+        try { localStorage.setItem('lexora_analytics', JSON.stringify(analytics)); } catch(e) {}
+    }
+
+    // Current question time tracking
+    const pos = parseInt(localStorage.getItem('lexora_position') || '0', 10);
+    let _curKey = qKeys[Math.min(pos, qKeys.length - 1)];
+    let _qStart = Date.now();
+
+    // Track entering current question
+    if (analytics.questions[_curKey]) {
+        analytics.questions[_curKey].visits++;
+    }
+
+    function _flushTime() {
+        if (!_curKey || !analytics.questions[_curKey]) return;
+        analytics.questions[_curKey].time_spent_ms += Date.now() - _qStart;
+        _qStart = Date.now();
+    }
+
+    // Wrap goTo — track time on leave, visits on enter
+    const _origGoTo = window.goTo;
+    window.goTo = function(idx) {
+        _flushTime();
+        _persist();
+        _origGoTo(idx);
+        _curKey = qKeys[idx] || _curKey;
+        _qStart = Date.now();
+        if (analytics.questions[_curKey]) {
+            analytics.questions[_curKey].visits++;
+        }
+    };
+
+    // Wrap markAnswered — count revisions (2s debounce)
+    const _origMark = window.markAnswered;
+    let _revTimers = {};
+    window.markAnswered = function() {
+        _origMark();
+        clearTimeout(_revTimers[_curKey]);
+        _revTimers[_curKey] = setTimeout(() => {
+            if (analytics.questions[_curKey]) {
+                analytics.questions[_curKey].revision_count++;
+                _persist();
+            }
+        }, 2000);
+    };
+
+    // Wrap readQuestion — count TTS starts (not pause/resume)
+    const _origRead = window.readQuestion;
+    window.readQuestion = function(btn) {
+        if (!window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+            if (analytics.questions[_curKey]) analytics.questions[_curKey].tts_count++;
+            analytics.global.total_tts_clicks++;
+            _persist();
+        }
+        _origRead(btn);
+    };
+
+    // Safety: persist every 10 seconds
+    setInterval(() => { _flushTime(); _persist(); }, 10000);
+
+    // Flush on page unload
+    window.addEventListener('beforeunload', () => { _flushTime(); _persist(); });
+
+    // Expose for submitExam finalization
+    window._lexoraAnalytics = analytics;
+    window._lexoraFlushTime = _flushTime;
+    window._lexoraPersist = _persist;
+    window._lexoraQKeys = qKeys;
+})();
+</script>
+
+<script>
+// ── Accessibility Controls (with persistence) ────────────────────────────
+(function () {
+    const root = document.documentElement;
+
+    // Restore saved prefs or use defaults
+    let savedPrefs = null;
+    try { savedPrefs = JSON.parse(localStorage.getItem('lexora_reading_prefs')); } catch(e){}
+    const prefs = savedPrefs || { size: 1.08, leading: 2.0, tracking: 0.04, theme: 0 };
+
+    function apply() {
+        root.style.setProperty('--reading-size',     prefs.size.toFixed(2) + 'rem');
+        root.style.setProperty('--reading-leading',  prefs.leading.toFixed(1));
+        root.style.setProperty('--reading-tracking', prefs.tracking.toFixed(2) + 'em');
+    }
+    function savePrefs() {
+        try { localStorage.setItem('lexora_reading_prefs', JSON.stringify(prefs)); } catch(e){}
+    }
+    apply();
+
+    const rows = document.querySelectorAll('.rc-row');
+    if (rows.length < 3) return;
+
+    // Text Size  (step 1px = 0.0625rem)
+    const sizeVal = rows[0].querySelector('.rc-val');
+    sizeVal.textContent = Math.round(prefs.size * 16);
+    rows[0].querySelectorAll('.rc-btn')[0].addEventListener('click', () => {
+        if (prefs.size > 0.75) { prefs.size = +(prefs.size - 0.0625).toFixed(4); sizeVal.textContent = Math.round(prefs.size * 16); apply(); savePrefs(); }
+    });
+    rows[0].querySelectorAll('.rc-btn')[1].addEventListener('click', () => {
+        if (prefs.size < 1.75) { prefs.size = +(prefs.size + 0.0625).toFixed(4); sizeVal.textContent = Math.round(prefs.size * 16); apply(); savePrefs(); }
+    });
+
+    // Line Height  (step 0.1)
+    const leadVal = rows[1].querySelector('.rc-val');
+    leadVal.textContent = prefs.leading.toFixed(1);
+    rows[1].querySelectorAll('.rc-btn')[0].addEventListener('click', () => {
+        if (prefs.leading > 1.2) { prefs.leading = +(prefs.leading - 0.1).toFixed(1); leadVal.textContent = prefs.leading.toFixed(1); apply(); savePrefs(); }
+    });
+    rows[1].querySelectorAll('.rc-btn')[1].addEventListener('click', () => {
+        if (prefs.leading < 3.5) { prefs.leading = +(prefs.leading + 0.1).toFixed(1); leadVal.textContent = prefs.leading.toFixed(1); apply(); savePrefs(); }
+    });
+
+    // Letter Gap  (step 0.01em)
+    const trackVal = rows[2].querySelector('.rc-val');
+    trackVal.textContent = prefs.tracking.toFixed(2);
+    rows[2].querySelectorAll('.rc-btn')[0].addEventListener('click', () => {
+        if (prefs.tracking > 0) { prefs.tracking = +(prefs.tracking - 0.01).toFixed(2); trackVal.textContent = prefs.tracking.toFixed(2); apply(); savePrefs(); }
+    });
+    rows[2].querySelectorAll('.rc-btn')[1].addEventListener('click', () => {
+        if (prefs.tracking < 0.20) { prefs.tracking = +(prefs.tracking + 0.01).toFixed(2); trackVal.textContent = prefs.tracking.toFixed(2); apply(); savePrefs(); }
+    });
+
+    // Background swatches
+    const themes = [
+        { bg: '#fdf7f0', surface: '#fff9f4', text: '#2e2218', mid: '#6b4e3c', border: '#ead8cc' },
+        { bg: '#f0f6f3', surface: '#f6faf8', text: '#1a3028', mid: '#3a6050', border: '#c0dcd4' },
+        { bg: '#f4f0f8', surface: '#f8f6fc', text: '#28203c', mid: '#5a4878', border: '#d4cce8' },
+        { bg: '#fff8e6', surface: '#fffdf4', text: '#3a2c00', mid: '#7a5800', border: '#f0d898' },
+        { bg: '#1e1e2c', surface: '#2a2a3c', text: '#e8e0f0', mid: '#b0a8c8', border: '#444466' },
+    ];
+
+    document.querySelectorAll('.bg-sw').forEach((sw, i) => {
+        sw.addEventListener('click', () => {
+            document.querySelectorAll('.bg-sw').forEach(s => s.classList.remove('sel'));
+            sw.classList.add('sel');
+            const t = themes[i];
+            root.style.setProperty('--bg',       t.bg);
+            root.style.setProperty('--surface',  t.surface);
+            root.style.setProperty('--text',     t.text);
+            root.style.setProperty('--text-mid', t.mid);
+            root.style.setProperty('--border',   t.border);
+            document.body.style.background = t.bg;
+            prefs.theme = i;
+            savePrefs();
+        });
+    });
+
+    // Restore saved theme
+    if (prefs.theme && prefs.theme > 0 && prefs.theme < themes.length) {
+        const swatches = document.querySelectorAll('.bg-sw');
+        swatches.forEach(s => s.classList.remove('sel'));
+        if (swatches[prefs.theme]) swatches[prefs.theme].classList.add('sel');
+        const t = themes[prefs.theme];
+        root.style.setProperty('--bg',       t.bg);
+        root.style.setProperty('--surface',  t.surface);
+        root.style.setProperty('--text',     t.text);
+        root.style.setProperty('--text-mid', t.mid);
+        root.style.setProperty('--border',   t.border);
+        document.body.style.background = t.bg;
+    }
+})();
+</script>
+
+<!-- ── Submit Exam Handler (with Review Modal) ────────────────────────── -->
+<script>
+window.showReviewModal = function() {
+    if (window._examSubmitted) return;
+
+    // Build review summary
+    const raw = localStorage.getItem('lexora_exam');
+    if (!raw) { submitExam(); return; }
+    const exam = JSON.parse(raw);
+    const units = exam.units || [];
+
+    // Group keys
+    const groups = {};
+    units.forEach(u => {
+        const m = u.id.match(/^(Q\d+)/);
+        if (m && !groups[m[1]]) groups[m[1]] = { header: null };
+        if (m && u.type === 'header') groups[m[1]].header = u;
+    });
+    const qKeys = Object.keys(groups);
+
+    const answers = JSON.parse(localStorage.getItem('lexora_answers') || '{}');
+    const flagged = new Set(JSON.parse(localStorage.getItem('lexora_flagged') || '[]'));
+
+    let listHtml = '';
+    let unanswered = 0;
+    let flaggedCount = 0;
+
+    qKeys.forEach((key, i) => {
+        const num = key.replace('Q','');
+        const hasAnswer = answers[key] && answers[key].trim();
+        const isFlagged = flagged.has(key);
+        const label = (groups[key].header && (groups[key].header.modified || groups[key].header.original)) || `Question ${num}`;
+        const short = label.length > 35 ? label.slice(0,35) + '...' : label;
+
+        let cls = 'rev-done';
+        let icon = '✓';
+        if (isFlagged) { cls = 'rev-flag'; icon = '⚑'; flaggedCount++; }
+        if (!hasAnswer) { cls = 'rev-empty'; icon = '—'; unanswered++; }
+
+        listHtml += `<li class="${cls}" onclick="document.getElementById('review-overlay')?.remove(); goTo(${i})">
+            <div class="rev-badge">${icon}</div>
+            <span>Q${num}. ${short}</span>
+        </li>`;
+    });
+
+    let warningText = '';
+    if (unanswered > 0) warningText += `<strong>${unanswered}</strong> unanswered question${unanswered !== 1 ? 's' : ''}. `;
+    if (flaggedCount > 0) warningText += `<strong>${flaggedCount}</strong> flagged for review. `;
+    if (!warningText) warningText = 'All questions answered. ';
+
+    const overlay = document.createElement('div');
+    overlay.className = 'review-overlay';
+    overlay.id = 'review-overlay';
+    overlay.innerHTML = `
+        <div class="review-modal">
+            <h2>Review Before Submitting</h2>
+            <p>${warningText}Click any question to go back.</p>
+            <ul class="review-list">${listHtml}</ul>
+            <div class="review-btns">
+                <button class="rev-cancel" onclick="document.getElementById('review-overlay')?.remove()">Go Back</button>
+                <button class="rev-submit" onclick="document.getElementById('review-overlay')?.remove(); submitExam()">Submit Exam</button>
+            </div>
+        </div>
+    `;
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+    document.body.appendChild(overlay);
+};
+
+window.submitExam = function() {
+    if (window._examSubmitted) return;
+    window._examSubmitted = true;
+
+    // ── Finalize analytics before clearing ──
+    if (window._lexoraFlushTime) window._lexoraFlushTime();
+    var analytics = window._lexoraAnalytics;
+    if (analytics) {
+        analytics.submitted_at = Date.now();
+        analytics.global.total_time_ms = Date.now() - analytics.started_at;
+        var finalAnswers = JSON.parse(localStorage.getItem('lexora_answers') || '{}');
+        var finalFlagged = JSON.parse(localStorage.getItem('lexora_flagged') || '[]');
+        var qKeys = window._lexoraQKeys || [];
+        qKeys.forEach(function(qKey) {
+            if (!analytics.questions[qKey]) return;
+            analytics.questions[qKey].answered = !!(finalAnswers[qKey] && finalAnswers[qKey].trim());
+            analytics.questions[qKey].flagged = finalFlagged.indexOf(qKey) !== -1;
+            analytics.questions[qKey].answer_length = (finalAnswers[qKey] || '').trim().length;
+        });
+        try { localStorage.setItem('lexora_analytics', JSON.stringify(analytics)); } catch(e) {}
+    }
+
+    // Stop the timer
+    if (window._examTimerInterval) {
+        clearInterval(window._examTimerInterval);
+    }
+
+    // Update timer display
+    var timerEl = document.getElementById('timer-display');
+    if (timerEl) {
+        timerEl.textContent = 'Submitted';
+        timerEl.style.color = 'var(--sage)';
+    }
+
+    // Disable submit button
+    var submitBtn = document.querySelector('.submit-btn');
+    if (submitBtn) {
+        submitBtn.textContent = 'Exam Submitted';
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.6';
+        submitBtn.style.cursor = 'default';
+    }
+
+    // Disable answer textareas
+    document.querySelectorAll('.ans-box').forEach(function(ta) {
+        ta.disabled = true;
+    });
+
+    // Show confirmation banner
+    var banner = document.createElement('div');
+    banner.style.cssText =
+        'position:fixed;top:0;left:0;right:0;padding:18px;background:var(--sage);color:#fff;' +
+        'text-align:center;font-weight:700;font-size:1rem;z-index:9999;font-family:inherit;';
+    banner.textContent = 'Your exam has been submitted successfully. Redirecting to results...';
+    document.body.appendChild(banner);
+
+    // Redirect to results page
+    setTimeout(function() {
+        window.location.href = 'Exam_Results.html';
+    }, 2500);
+
+    // Clear saved session (but NOT lexora_exam, lexora_analytics, lexora_exam_name)
+    ['answers','flagged','position','timer_remaining','timer_saved_at','reading_prefs'].forEach(k => {
+        try { localStorage.removeItem('lexora_' + k); } catch(e) {}
+    });
+};
+</script>
+
+<!-- ── Countdown Timer (with persistence) ──────────────────────────────── -->
+<script>
+(function() {
+    var configRaw = localStorage.getItem('lexora_config');
+    var config = configRaw ? JSON.parse(configRaw) : {};
+
+    var durationMin = config.duration_minutes || 120;
+    var totalSeconds = durationMin * 60;
+
+    // Restore saved timer if available
+    var savedRemaining = localStorage.getItem('lexora_timer_remaining');
+    var savedAt = localStorage.getItem('lexora_timer_saved_at');
+    if (savedRemaining && savedAt) {
+        var elapsed = Math.floor((Date.now() - Number(savedAt)) / 1000);
+        totalSeconds = Math.max(0, Number(savedRemaining) - elapsed);
+    }
+
+    var timerEl = document.getElementById('timer-display');
+
+    function formatTime(s) {
+        var h   = Math.floor(s / 3600);
+        var m   = Math.floor((s % 3600) / 60);
+        var sec = s % 60;
+        return h + ':' + String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+    }
+
+    function persistTimer() {
+        try {
+            localStorage.setItem('lexora_timer_remaining', String(totalSeconds));
+            localStorage.setItem('lexora_timer_saved_at', String(Date.now()));
+        } catch(e) {}
+    }
+
+    if (timerEl) timerEl.textContent = formatTime(totalSeconds);
+    persistTimer();
+
+    var timerInterval = setInterval(function() {
+        totalSeconds--;
+
+        if (totalSeconds <= 0) {
+            clearInterval(timerInterval);
+            if (timerEl) timerEl.textContent = '0:00:00';
+            if (config.auto_submit) {
+                submitExam();
+            }
+            return;
+        }
+
+        if (timerEl) timerEl.textContent = formatTime(totalSeconds);
+        persistTimer();
+        if (totalSeconds <= 600 && totalSeconds > 300 && timerEl) {
+            timerEl.style.color = '#d09040';
+        }
+        // Urgent warning at 5 minutes
+        if (totalSeconds <= 300 && timerEl) {
+            timerEl.style.color = '#e06050';
+        }
+    }, 1000);
+
+    window._examTimerInterval = timerInterval;
+})();
+</script>
+
+<!-- ── Integrity Enforcement ────────────────────────────────────────────── -->
+<script>
+(function() {
+    var configRaw = localStorage.getItem('lexora_config');
+    var config = configRaw ? JSON.parse(configRaw) : {};
+
+    var violationLimit = (config.violation_limit !== undefined) ? config.violation_limit : 1;
+    var violationCount = 0;
+
+    var vioBanner    = document.getElementById('vio-banner');
+    var stFullscreen = document.getElementById('st-fullscreen');
+    var stTabfocus   = document.getElementById('st-tabfocus');
+    var stViolations = document.getElementById('st-violations');
+
+    function updateViolationUI() {
+        if (stViolations) {
+            stViolations.textContent = violationCount + ' / ' + (violationLimit + 1);
+            stViolations.className = violationCount > 0 ? 'st-warn' : 'st-ok';
+        }
+
+        if (vioBanner && violationCount > 0) {
+            var remaining = Math.max(0, violationLimit - violationCount);
+            vioBanner.style.display = 'block';
+            vioBanner.innerHTML =
+                '<strong>\u26A0 ' + violationCount + ' Warning' + (violationCount !== 1 ? 's' : '') + ' Used</strong> ' +
+                (remaining > 0
+                    ? 'You have ' + remaining + ' warning' + (remaining !== 1 ? 's' : '') + ' remaining.'
+                    : 'The next violation will automatically submit your exam.');
+        }
+    }
+
+    function recordViolation() {
+        violationCount++;
+        updateViolationUI();
+        if (violationCount > violationLimit) {
+            submitExam();
+        }
+    }
+
+    // Tab-switch detection
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            recordViolation();
+            if (stTabfocus) {
+                stTabfocus.textContent = '\u25CF Left Tab';
+                stTabfocus.className = 'st-warn';
+            }
+        } else {
+            if (stTabfocus) {
+                stTabfocus.textContent = '\u25CF Secure';
+                stTabfocus.className = 'st-ok';
+            }
+        }
+    });
+
+    // Fullscreen enforcement
+    if (config.fullscreen_enforced) {
+        document.addEventListener('fullscreenchange', function() {
+            if (!document.fullscreenElement) {
+                if (stFullscreen) { stFullscreen.textContent = '\u25CF Exited'; stFullscreen.className = 'st-warn'; }
+                recordViolation();
+            } else {
+                if (stFullscreen) { stFullscreen.textContent = '\u25CF Active'; stFullscreen.className = 'st-ok'; }
+            }
+        });
+        document.addEventListener('webkitfullscreenchange', function() {
+            if (!document.webkitFullscreenElement && !document.fullscreenElement) {
+                if (stFullscreen) { stFullscreen.textContent = '\u25CF Exited'; stFullscreen.className = 'st-warn'; }
+                recordViolation();
+            }
+        });
+    }
+
+    // Copy-paste prevention
+    if (config.copy_paste_disabled) {
+        ['copy', 'cut', 'paste'].forEach(function(evt) {
+            document.addEventListener(evt, function(e) { e.preventDefault(); });
+        });
+    }
+
+    // Initial state
+    if (stViolations) stViolations.textContent = '0 / ' + (violationLimit + 1);
+    if (vioBanner) vioBanner.style.display = 'none';
+})();
+</script>
+
+</body>
+</html>

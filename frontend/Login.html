@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>LEXORA — Sign In</title>
+
+    <link rel="stylesheet" href="transitions.css" />
+    <script defer src="transitions.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Fraunces:ital,wght@0,300;0,500;1,300&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+    <style>
+        @font-face {
+            font-family: 'OpenDyslexic';
+            src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/OpenDyslexic-Regular.otf') format('opentype');
+            font-weight: 400;
+        }
+        @font-face {
+            font-family: 'OpenDyslexic';
+            src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/OpenDyslexic-Bold.otf') format('opentype');
+            font-weight: 700;
+        }
+
+        :root {
+            --bg:          #fdf7f0;
+            --surface:     #fff9f4;
+            --peach:       #f0a080;
+            --peach-soft:  #fce8dc;
+            --peach-pale:  #fff1ea;
+            --peach-deep:  #e07060;
+            --sage:        #84b8a4;
+            --sage-soft:   #d0ece4;
+            --lav:         #a89cd4;
+            --lav-soft:    #e4e0f4;
+            --amber:       #f0c060;
+            --amber-soft:  #fef3d0;
+            --text:        #2e2218;
+            --text-mid:    #6b4e3c;
+            --text-muted:  #a88878;
+            --border:      #ead8cc;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'OpenDyslexic', 'Nunito', sans-serif;
+            background: var(--bg);
+            background-image:
+                    radial-gradient(ellipse 65% 55% at 10% 15%, rgba(240,160,128,.16) 0%, transparent 60%),
+                    radial-gradient(ellipse 55% 45% at 90% 85%, rgba(168,156,212,.12) 0%, transparent 55%),
+                    radial-gradient(ellipse 40% 40% at 55% 50%, rgba(132,184,164,.08) 0%, transparent 55%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            gap: 20px;
+        }
+
+        /* ── LOGO above card ── */
+        .page-logo {
+            font-family: 'Fraunces', serif;
+            font-size: 1.7rem;
+            letter-spacing: -.4px;
+            color: var(--text);
+            text-align: center;
+            animation: fadeDown .5s ease both;
+        }
+        .page-logo em { color: var(--peach); font-style: normal; }
+        .page-logo-sub {
+            font-size: .65rem;
+            font-weight: 700;
+            letter-spacing: 1.4px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            text-align: center;
+            margin-top: 2px;
+            animation: fadeDown .55s .05s ease both;
+        }
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── MAIN CARD ── */
+        .container {
+            background: var(--surface);
+            border-radius: 24px;
+            box-shadow:
+                    0 0 0 1.5px var(--border),
+                    0 20px 60px rgba(46,34,24,.10),
+                    0 4px 16px rgba(46,34,24,.06);
+            position: relative;
+            overflow: hidden;
+            width: 780px;
+            min-height: 520px;
+            animation: cardUp .55s cubic-bezier(.22,.68,0,1.2) .1s both;
+        }
+        @keyframes cardUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── FORM PANELS ── */
+        .form-container {
+            position: absolute;
+            top: 0; height: 100%;
+            transition: all 0.6s ease-in-out;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .sign-in-container {
+            left: 0; width: 50%; z-index: 2;
+        }
+        .container.right-panel-active .sign-in-container {
+            transform: translateX(100%);
+        }
+
+        .sign-up-container {
+            left: 0; width: 50%;
+            opacity: 0; z-index: 1;
+        }
+        .container.right-panel-active .sign-up-container {
+            transform: translateX(100%);
+            opacity: 1; z-index: 5;
+            animation: show .6s;
+        }
+        @keyframes show {
+            0%,49.99% { opacity: 0; z-index: 1; }
+            50%,100%  { opacity: 1; z-index: 5; }
+        }
+
+        /* ── FORM ── */
+        form {
+            width: 100%;
+            padding: 48px 44px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+            background: var(--surface);
+        }
+
+        .form-role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--peach-soft);
+            border: 1px solid var(--peach);
+            color: #b85030;
+            font-size: .62rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 4px 12px;
+            border-radius: 16px;
+            margin-bottom: 14px;
+        }
+        .role-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--peach);
+        }
+
+        .form-title {
+            font-family: 'Fraunces', serif;
+            font-size: 1.55rem;
+            font-weight: 400;
+            color: var(--text);
+            letter-spacing: -.3px;
+            margin-bottom: 6px;
+            text-align: center;
+        }
+        .form-title em { color: var(--peach); font-style: italic; }
+
+        .form-sub {
+            font-size: .75rem;
+            color: var(--text-muted);
+            margin-bottom: 22px;
+            text-align: center;
+            line-height: 1.6;
+            letter-spacing: .02em;
+        }
+
+        /* Role selector tabs */
+        .role-tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 18px;
+            background: var(--peach-pale);
+            border: 1.5px solid var(--border);
+            border-radius: 14px;
+            padding: 4px;
+        }
+
+        .role-tab {
+            flex: 1;
+            padding: 7px 16px;
+            border-radius: 10px;
+            border: none;
+            background: transparent;
+            font-family: 'OpenDyslexic', 'Nunito', sans-serif;
+            font-size: .72rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all .2s;
+            box-shadow: none;
+            letter-spacing: .01em;
+            text-transform: none;
+            padding: 7px 14px;
+        }
+        .role-tab.active {
+            background: var(--surface);
+            color: #b85030;
+            box-shadow: 0 1px 6px rgba(46,34,24,.08);
+            border: 1.5px solid var(--border);
+        }
+        .role-tab:hover:not(.active) { color: var(--text-mid); }
+
+        /* Input fields */
+        .input-wrap {
+            width: 100%;
+            position: relative;
+            margin-bottom: 10px;
+        }
+        .input-icon {
+            position: absolute; left: 13px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted); font-size: .8rem;
+            pointer-events: none;
+        }
+        input {
+            width: 100%;
+            background: var(--peach-pale);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            padding: 11px 14px 11px 36px;
+            font-family: 'OpenDyslexic', 'Nunito', sans-serif;
+            font-size: .82rem;
+            color: var(--text);
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+            letter-spacing: .03em;
+        }
+        input::placeholder { color: var(--text-muted); font-size: .78rem; }
+        input:focus {
+            border-color: var(--peach);
+            box-shadow: 0 0 0 3px rgba(240,160,128,.15);
+            background: var(--surface);
+        }
+
+        .forgot-link {
+            font-size: .72rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            margin: 2px 0 18px;
+            align-self: flex-end;
+            transition: color .2s;
+        }
+        .forgot-link:hover { color: var(--peach); }
+
+        /* Primary submit button */
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            border-radius: 24px;
+            background: linear-gradient(135deg, var(--peach), #f4a898);
+            border: none;
+            color: #fff;
+            font-family: 'OpenDyslexic', 'Nunito', sans-serif;
+            font-size: .82rem;
+            font-weight: 700;
+            letter-spacing: .04em;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(240,160,128,.35);
+            transition: all .2s;
+            margin-top: 4px;
+            text-transform: none;
+        }
+        .btn-submit:hover {
+            background: linear-gradient(135deg, var(--peach-deep), #e8897a);
+            box-shadow: 0 6px 22px rgba(224,112,96,.42);
+            transform: translateY(-1px);
+        }
+        .btn-submit:active { transform: scale(.97); }
+
+        /* Divider */
+        .divider {
+            display: flex; align-items: center; gap: 10px;
+            width: 100%; margin: 14px 0 10px;
+        }
+        .divider::before, .divider::after {
+            content: ''; flex: 1; height: 1px; background: var(--border);
+        }
+        .divider span {
+            font-size: .65rem; color: var(--text-muted); font-weight: 700;
+            letter-spacing: .8px; text-transform: uppercase;
+        }
+
+        /* Social icons */
+        .social-row {
+            display: flex; gap: 10px; margin-bottom: 4px;
+        }
+        .social-btn {
+            width: 38px; height: 38px; border-radius: 50%;
+            background: var(--peach-pale);
+            border: 1.5px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-mid); font-size: .85rem;
+            cursor: pointer; transition: all .2s;
+            text-decoration: none;
+            padding: 0;
+            box-shadow: none;
+            letter-spacing: 0;
+            text-transform: none;
+        }
+        .social-btn:hover {
+            border-color: var(--peach);
+            background: var(--peach-soft);
+            color: var(--peach);
+            transform: translateY(-2px);
+            box-shadow: none;
+        }
+
+        /* ── OVERLAY ── */
+        .overlay-container {
+            position: absolute;
+            top: 0; left: 50%;
+            width: 50%; height: 100%;
+            overflow: hidden;
+            transition: transform 0.6s ease-in-out;
+            z-index: 100;
+            border-radius: 0 24px 24px 0;
+        }
+        .container.right-panel-active .overlay-container {
+            transform: translateX(-100%);
+            border-radius: 24px 0 0 24px;
+        }
+
+        .overlay {
+            background: linear-gradient(145deg, #fac4a4 0%, var(--peach) 30%, #e8796a 65%, #d86050 100%);
+            position: relative;
+            left: -100%;
+            height: 100%; width: 200%;
+            transform: translateX(0);
+            transition: transform 0.6s ease-in-out;
+        }
+
+        /* Dot texture */
+        .overlay::before {
+            content: '';
+            position: absolute; inset: 0;
+            background-image: radial-gradient(circle, rgba(255,255,255,.14) 1px, transparent 1px);
+            background-size: 20px 20px;
+            pointer-events: none;
+        }
+
+        /* Soft inner light */
+        .overlay::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse 60% 60% at 60% 40%, rgba(255,255,255,.18) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .container.right-panel-active .overlay {
+            transform: translateX(50%);
+        }
+
+        .overlay-panel {
+            position: absolute;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            padding: 0 36px;
+            text-align: center;
+            top: 0; height: 100%; width: 50%;
+            transition: transform 0.6s ease-in-out;
+            z-index: 1;
+        }
+
+        /* Overlay logo */
+        .ov-logo {
+            font-family: 'Fraunces', serif;
+            font-size: 1.6rem;
+            color: #fff;
+            letter-spacing: -.3px;
+            margin-bottom: 6px;
+            text-shadow: 0 2px 10px rgba(0,0,0,.12);
+        }
+        .ov-logo em { color: rgba(255,255,255,.7); font-style: italic; }
+
+        .ov-tagline {
+            font-size: .62rem;
+            font-weight: 700;
+            letter-spacing: 1.3px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,.65);
+            margin-bottom: 20px;
+        }
+
+        .ov-heading {
+            font-family: 'Fraunces', serif;
+            font-size: 1.25rem;
+            font-weight: 400;
+            color: #fff;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 8px rgba(0,0,0,.1);
+        }
+
+        .ov-text {
+            font-size: .76rem;
+            color: rgba(255,255,255,.82);
+            line-height: 1.75;
+            letter-spacing: .02em;
+            word-spacing: .08em;
+            margin-bottom: 24px;
+        }
+
+        /* Ghost button on overlay */
+        .btn-ghost {
+            padding: 10px 28px;
+            border-radius: 24px;
+            border: 2px solid rgba(255,255,255,.8);
+            background: transparent;
+            color: #fff;
+            font-family: 'OpenDyslexic', 'Nunito', sans-serif;
+            font-size: .76rem;
+            font-weight: 700;
+            letter-spacing: .04em;
+            cursor: pointer;
+            transition: all .2s;
+            box-shadow: none;
+            text-transform: none;
+        }
+        .btn-ghost:hover {
+            background: rgba(255,255,255,.18);
+            border-color: #fff;
+            transform: translateY(-1px);
+            box-shadow: none;
+        }
+
+        .overlay-left  { transform: translateX(-20%); }
+        .container.right-panel-active .overlay-left  { transform: translateX(0); }
+        .overlay-right { right: 0; transform: translateX(0); }
+        .container.right-panel-active .overlay-right { transform: translateX(20%); }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<!-- Logo above card -->
+<div>
+    <div class="page-logo">LEX<em>ORA</em></div>
+    <div class="page-logo-sub">Accessible Exam Platform</div>
+</div>
+
+<!-- Main container -->
+<div class="container" id="container">
+
+    <!-- ── SIGN UP ── -->
+    <div class="form-container sign-up-container">
+        <form action="">
+            <div class="form-role-badge">
+                <div class="role-dot"></div>
+                New Account
+            </div>
+            <div class="form-title">Create your <em>account</em></div>
+            <div class="form-sub">Fill in your details to get started with LEXORA.</div>
+
+            <div class="role-tabs">
+                <button type="button" class="role-tab active">Student</button>
+                <button type="button" class="role-tab">Admin</button>
+            </div>
+
+            <div class="input-wrap">
+                <i class="fa-regular fa-user input-icon"></i>
+                <input type="text" placeholder="Full Name"/>
+            </div>
+            <div class="input-wrap">
+                <i class="fa-regular fa-envelope input-icon"></i>
+                <input type="email" placeholder="Email Address"/>
+            </div>
+            <div class="input-wrap">
+                <i class="fa-solid fa-lock input-icon"></i>
+                <input type="password" placeholder="Create Password"/>
+            </div>
+
+            <button type="submit" class="btn-submit">Create Account →</button>
+
+        </form>
+    </div>
+
+    <!-- ── SIGN IN ── -->
+    <div class="form-container sign-in-container">
+        <form action="">
+            <div class="form-role-badge">
+                <div class="role-dot"></div>
+                Welcome Back
+            </div>
+            <div class="form-title">Sign in to <em>LEXORA</em></div>
+            <div class="form-sub">Enter your credentials to access your exam dashboard.</div>
+
+            <div class="role-tabs">
+                <button type="button" class="role-tab active">Student</button>
+                <button type="button" class="role-tab">Admin</button>
+            </div>
+
+            <div class="input-wrap">
+                <i class="fa-regular fa-envelope input-icon"></i>
+                <input type="email" placeholder="Email Address"/>
+            </div>
+            <div class="input-wrap">
+                <i class="fa-solid fa-lock input-icon"></i>
+                <input type="password" placeholder="Password"/>
+            </div>
+
+            <button type="button" class="btn-submit" id="btn-signin">Sign In →</button>
+
+        </form>
+    </div>
+
+    <!-- ── OVERLAY ── -->
+    <div class="overlay-container">
+        <div class="overlay">
+
+            <!-- Left panel (shown when on sign-up view) -->
+            <div class="overlay-panel overlay-left">
+                <div class="ov-logo">LEX<em>ORA</em></div>
+                <div class="ov-tagline">Accessible Exam Platform</div>
+                <div class="ov-heading">Already have an account?</div>
+                <div class="ov-text">Sign in to continue your exam journey. Your accessibility settings are saved and ready.</div>
+                <button class="btn-ghost" id="signIn">Sign In →</button>
+            </div>
+
+            <!-- Right panel (shown on sign-in view) -->
+            <div class="overlay-panel overlay-right">
+                <div class="ov-logo">LEX<em>ORA</em></div>
+                <div class="ov-tagline">Accessible Exam Platform</div>
+                <div class="ov-heading">New to LEXORA?</div>
+                <div class="ov-text">Join thousands of students who take exams with confidence. Designed for the way you think.</div>
+                <button class="btn-ghost" id="signUp">Create Account →</button>
+                <a href="Upload.html" style="margin-top:16px;font-size:.7rem;color:rgba(255,255,255,.75);text-decoration:underline;text-underline-offset:3px;cursor:pointer;">
+                    Just want to convert a PDF? Use the Upload Tool →
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const container = document.getElementById('container');
+    document.getElementById('signUp').addEventListener('click', () => container.classList.add('right-panel-active'));
+    document.getElementById('signIn').addEventListener('click', () => container.classList.remove('right-panel-active'));
+
+    // Role tabs
+    document.querySelectorAll('.role-tabs').forEach(tabGroup => {
+        tabGroup.querySelectorAll('.role-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabGroup.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+            });
+        });
+    });
+
+    // Sign in: route based on active role tab
+    document.getElementById('btn-signin').addEventListener('click', () => {
+        const signInForm = document.querySelector('.sign-in-container');
+        const activeTab  = signInForm.querySelector('.role-tab.active');
+        const role       = activeTab ? activeTab.textContent.trim().toLowerCase() : 'student';
+
+        if (role === 'admin') {
+            transitionTo('Admin_Portal.html');
+        } else {
+            transitionTo('PreExam_Dashboard.html');
+        }
+    });
+</script>
+
+
+</body>
+</html>

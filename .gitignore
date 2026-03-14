@@ -25,3 +25,9 @@ Thumbs.db
 
 # Temporary files
 *.tmp
+
+# Debug scripts
+debug_*.py
+
+# Sample files
+sample_exam.pdf

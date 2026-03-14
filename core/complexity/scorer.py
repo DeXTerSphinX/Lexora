@@ -104,6 +104,34 @@ def _compute_info_density(sent):
     return 0.7 * content_ratio + 0.3 * entity_ratio
 
 
+def get_hard_words(text: str, n: int = 5) -> list:
+    """
+    Return up to n content words with the highest lexical difficulty
+    (lowest zipf frequency), preserving original capitalisation.
+    Excludes stop words, punctuation, and very short tokens.
+    """
+    doc = nlp(text)
+    seen = set()
+    scored = []
+
+    for token in doc:
+        if token.is_stop or token.is_punct or token.is_space:
+            continue
+        if len(token.text) <= 3:
+            continue
+        word_lower = token.text.lower()
+        if word_lower in seen:
+            continue
+        seen.add(word_lower)
+        freq = zipf_frequency(word_lower, "en")
+        difficulty = max(0.0, 7.0 - freq)
+        if difficulty > 2.0:   # only flag genuinely uncommon words
+            scored.append((difficulty, token.text))
+
+    scored.sort(key=lambda x: -x[0])
+    return [w for _, w in scored[:n]]
+
+
 def compute_complexity(text: str, profile: str = "GENERAL") -> dict:
     """
     Complexity scorer v1.0

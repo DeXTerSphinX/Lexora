@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>LEXORA — Start Exam</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Fraunces:ital,wght@0,400;1,300&display=swap" rel="stylesheet"/>
+
+    <link rel="stylesheet" href="transitions.css" />
+    <script defer src="transitions.js"></script>
+
+    <style>
+        @font-face {
+            font-family: 'OpenDyslexic';
+            src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/OpenDyslexic-Regular.otf') format('opentype');
+            font-weight: 400;
+        }
+        @font-face {
+            font-family: 'OpenDyslexic';
+            src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/OpenDyslexic-Bold.otf') format('opentype');
+            font-weight: 700;
+        }
+
+        :root {
+            --bg:          #fdf7f0;
+            --surface:     #fff9f4;
+            --peach:       #f0a080;
+            --peach-soft:  #fce8dc;
+            --peach-pale:  #fff1ea;
+            --rose-soft:   #fddcdc;
+            --rose:        #f0a0a0;
+            --sage:        #84b8a4;
+            --sage-soft:   #d0ece4;
+            --lav:         #a89cd4;
+            --lav-soft:    #e4e0f4;
+            --amber:       #f0c060;
+            --amber-soft:  #fef3d0;
+            --text:        #2e2218;
+            --text-mid:    #6b4e3c;
+            --text-muted:  #a88878;
+            --border:      #ead8cc;
+            --radius:      22px;
+            --radius-sm:   12px;
+            --radius-xs:   8px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body, input, textarea, button {
+            font-family: 'OpenDyslexic', 'Nunito', sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            /* Subtle radial warmth — no harsh textures */
+            background-image:
+                    radial-gradient(ellipse 70% 50% at 15% 10%, rgba(240,160,128,.12) 0%, transparent 60%),
+                    radial-gradient(ellipse 60% 50% at 88% 85%, rgba(168,156,212,.10) 0%, transparent 55%),
+                    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(132,184,164,.07) 0%, transparent 60%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: var(--text);
+        }
+
+        /* ══════════════════════════════
+           HEADER
+        ══════════════════════════════ */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 44px;
+            background: rgba(255,249,244,.80);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(234,216,204,.7);
+            position: sticky; top: 0; z-index: 20;
+        }
+
+        .logo {
+            font-family: 'Fraunces', serif;
+            font-size: 1.5rem;
+            letter-spacing: -.4px;
+            color: var(--text);
+            flex-shrink: 0;
+        }
+        .logo em { color: var(--peach); font-style: normal; }
+
+        .exam-title-center {
+            position: absolute;
+            left: 50%; transform: translateX(-50%);
+            text-align: center;
+        }
+        .exam-title-center .label {
+            font-size: .62rem;
+            font-weight: 700;
+            letter-spacing: 1.1px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+        .exam-title-center .title {
+            font-size: .92rem;
+            font-weight: 700;
+            color: var(--text-mid);
+        }
+
+        .student-chip {
+            display: flex; align-items: center; gap: 9px;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            padding: 6px 16px 6px 8px;
+            border-radius: 28px;
+            flex-shrink: 0;
+        }
+        .avatar {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--peach), #f4c0a0);
+            display: flex; align-items: center; justify-content: center;
+            font-size: .72rem; font-weight: 700; color: #804828;
+            flex-shrink: 0;
+        }
+        .student-name { font-size: .8rem; font-weight: 700; color: var(--text-mid); }
+
+        /* ══════════════════════════════
+           MAIN SCROLL AREA
+        ══════════════════════════════ */
+        .page-body {
+            flex: 1;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 44px 24px 60px;
+            overflow-y: auto;
+        }
+
+        /* ══════════════════════════════
+           GLASS CARD
+        ══════════════════════════════ */
+        .glass-card {
+            width: 100%;
+            max-width: 740px;
+            background: rgba(255,249,244,.72);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1.5px solid rgba(234,216,204,.9);
+            border-radius: 28px;
+            overflow: hidden;
+            /* Very soft shadow only */
+            box-shadow:
+                    0 2px 0 rgba(255,255,255,.9) inset,
+                    0 8px 40px rgba(180,120,80,.08);
+        }
+
+        /* Top accent strip */
+        .card-accent {
+            height: 4px;
+            background: linear-gradient(90deg, var(--peach) 0%, var(--lav) 50%, var(--sage) 100%);
+        }
+
+        .card-body {
+            padding: 44px 48px 48px;
+            display: flex;
+            flex-direction: column;
+            gap: 36px;
+        }
+
+        /* ── Section wrapper ── */
+        .section { display: flex; flex-direction: column; gap: 16px; }
+
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+        }
+
+        /* ── Section label ── */
+        .sec-label {
+            font-size: .62rem;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        /* ══ 1. WELCOME ══ */
+        .welcome-block { display: flex; flex-direction: column; gap: 10px; }
+        .welcome-icon { font-size: 2rem; margin-bottom: 4px; }
+        .welcome-title {
+            font-family: 'Fraunces', serif;
+            font-size: 1.7rem;
+            font-weight: 400;
+            color: var(--text);
+            line-height: 1.25;
+            letter-spacing: -.3px;
+        }
+        .welcome-title em { color: var(--peach); font-style: italic; }
+        .welcome-sub {
+            font-size: .9rem;
+            line-height: 1.85;
+            letter-spacing: .03em;
+            word-spacing: .12em;
+            color: var(--text-mid);
+            max-width: 520px;
+        }
+
+        /* ══ 2. EXAM DETAILS ══ */
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .detail-block {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px 18px;
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            transition: border-color .2s;
+        }
+        .detail-block:hover { border-color: var(--peach); }
+        .detail-icon {
+            width: 38px; height: 38px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .ic-peach  { background: var(--peach-soft); }
+        .ic-sage   { background: var(--sage-soft); }
+        .ic-lav    { background: var(--lav-soft); }
+        .ic-amber  { background: var(--amber-soft); }
+
+        .detail-text { display: flex; flex-direction: column; gap: 2px; }
+        .detail-label { font-size: .65rem; font-weight: 700; letter-spacing: .9px; text-transform: uppercase; color: var(--text-muted); }
+        .detail-value { font-size: .95rem; font-weight: 700; color: var(--text); }
+
+        /* ══ QUESTION PAPER LOADED ══ */
+        .qp-loaded-block {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: var(--sage-soft);
+            border: 1.5px solid var(--sage);
+            border-radius: var(--radius-sm);
+            padding: 16px 20px;
+        }
+        .qp-icon {
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+        .qp-text { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+        .qp-title {
+            font-size: .88rem;
+            font-weight: 700;
+            color: #2a6a50;
+        }
+        .qp-sub {
+            font-size: .72rem;
+            color: #4a9070;
+        }
+        .qp-badge {
+            background: var(--sage);
+            color: #fff;
+            font-size: .68rem;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 14px;
+            letter-spacing: .5px;
+            flex-shrink: 0;
+        }
+
+        /* ══ unused feature status ══ */
+        .feat-status {
+            font-size: .62rem;
+            font-weight: 700;
+            letter-spacing: .8px;
+            text-transform: uppercase;
+            color: var(--sage);
+        }
+        /* Toggle pill (read-only, always on) */
+        .toggle-pill {
+            width: 34px; height: 18px; border-radius: 10px;
+            background: var(--sage);
+            position: relative; flex-shrink: 0;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,.08);
+        }
+        .toggle-pill::after {
+            content: '';
+            position: absolute;
+            right: 3px; top: 3px;
+            width: 12px; height: 12px; border-radius: 50%;
+            background: #fff;
+        }
+
+        /* ══ 4. SYSTEM CHECK ══ */
+        .syscheck-list { display: flex; flex-direction: column; gap: 8px; }
+        .sys-row {
+            display: flex; align-items: center; justify-content: space-between;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-xs);
+            padding: 11px 16px;
+        }
+        .sys-left { display: flex; align-items: center; gap: 11px; }
+        .sys-icon { font-size: 1rem; }
+        .sys-name { font-size: .82rem; font-weight: 700; color: var(--text-mid); }
+        .sys-check {
+            display: flex; align-items: center; gap: 6px;
+            font-size: .72rem; font-weight: 700; color: var(--sage);
+        }
+        .check-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--sage);
+        }
+
+        /* ══ 5. RULES ══ */
+        .rules-list { display: flex; flex-direction: column; gap: 8px; }
+        .rule-row {
+            display: flex; align-items: flex-start; gap: 11px;
+            background: var(--amber-soft);
+            border: 1px solid rgba(240,192,96,.55);
+            border-radius: var(--radius-xs);
+            padding: 12px 16px;
+        }
+        .rule-icon { font-size: .95rem; flex-shrink: 0; margin-top: 1px; }
+        .rule-text {
+            font-size: .82rem;
+            line-height: 1.65;
+            letter-spacing: .02em;
+            word-spacing: .1em;
+            color: #7a4a00;
+        }
+
+        /* ══ 6. ACCESSIBILITY REMINDER ══ */
+        .reminder-block {
+            background: linear-gradient(135deg, rgba(240,160,128,.10), rgba(168,156,212,.10));
+            border: 1.5px solid rgba(234,216,204,.9);
+            border-radius: var(--radius-sm);
+            padding: 22px 24px;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+        .reminder-glyph {
+            font-size: 1.5rem; flex-shrink: 0; line-height: 1;
+        }
+        .reminder-body { display: flex; flex-direction: column; gap: 5px; }
+        .reminder-title {
+            font-size: .88rem; font-weight: 700; color: var(--text-mid);
+        }
+        .reminder-text {
+            font-size: .82rem;
+            line-height: 1.8;
+            letter-spacing: .03em;
+            word-spacing: .12em;
+            color: var(--text-muted);
+        }
+
+        /* ══ BOTTOM ACTIONS ══ */
+        .actions-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            padding-top: 4px;
+        }
+
+        .btn-test-audio {
+            display: flex; align-items: center; gap: 8px;
+            padding: 12px 22px;
+            border-radius: 24px;
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            font-family: 'OpenDyslexic', 'Nunito', sans-serif;
+            font-size: .82rem; font-weight: 700;
+            color: var(--text-mid);
+            cursor: pointer;
+            transition: all .2s;
+        }
+        .btn-test-audio:hover {
+            background: var(--peach-pale);
+            border-color: var(--peach);
+            color: #b85030;
+        }
+
+        .btn-start {
+            flex: 1;
+            max-width: 340px;
+            padding: 16px 32px;
+            border-radius: 28px;
+            background: linear-gradient(135deg, var(--peach) 0%, #f4a898 100%);
+            border: none;
+            color: #fff;
+            font-family: 'OpenDyslexic', 'Nunito', sans-serif;
+            font-size: 1rem; font-weight: 700;
+            cursor: pointer;
+            letter-spacing: .02em;
+            box-shadow: 0 4px 20px rgba(240,160,128,.35);
+            transition: all .2s;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .btn-start:hover {
+            background: linear-gradient(135deg, #e07060 0%, #f09080 100%);
+            box-shadow: 0 6px 26px rgba(224,112,96,.42);
+            transform: translateY(-1px);
+        }
+        .btn-start:active { transform: translateY(0); }
+        .start-arrow { font-size: 1.1rem; }
+
+        /* ══ Scrollbar ══ */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        /* ══ Fade-in animation ══ */
+        .glass-card {
+            animation: cardIn .55s cubic-bezier(.22,.68,0,1.2) both;
+        }
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(18px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .ver-tag {
+            position: fixed; bottom: 12px; right: 16px;
+            background: rgba(46,34,24,.65); color: #fde8d8;
+            font-size: .6rem; font-weight: 700; padding: 4px 12px;
+            border-radius: 14px; z-index: 99; letter-spacing: .4px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ════ HEADER ════ -->
+<header class="header">
+    <div class="logo">LEX<em>ORA</em></div>
+
+    <div class="exam-title-center">
+        <div class="label">Upcoming Exam</div>
+        <div class="title" id="exam-title">Biology — Unit 3 Mid-Term Examination</div>
+    </div>
+
+    <div class="student-chip">
+        <div class="avatar">S</div>
+        <span class="student-name">Student</span>
+    </div>
+</header>
+
+<!-- ════ PAGE BODY ════ -->
+<div class="page-body">
+    <div class="glass-card">
+        <div class="card-accent"></div>
+        <div class="card-body">
+
+            <!-- ── 1. WELCOME ── -->
+            <div class="welcome-block">
+                <div class="welcome-icon">🌿</div>
+                <div class="welcome-title">Welcome to your <em>exam</em></div>
+                <div class="welcome-sub">
+                    This exam has been designed to support accessibility while maintaining fairness.
+                    Take a moment to review the details below before you begin.
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- ── 2. EXAM DETAILS ── -->
+            <div class="section">
+                <div class="sec-label">Exam Details</div>
+                <div class="details-grid">
+
+                    <div class="detail-block">
+                        <div class="detail-icon ic-peach">⏱</div>
+                        <div class="detail-text">
+                            <div class="detail-label">Duration</div>
+                            <div class="detail-value" id="detail-duration">2 Hours</div>
+                        </div>
+                    </div>
+
+                    <div class="detail-block">
+                        <div class="detail-icon ic-sage">📋</div>
+                        <div class="detail-text">
+                            <div class="detail-label">Total Questions</div>
+                            <div class="detail-value" id="detail-questions">—</div>
+                        </div>
+                    </div>
+
+                    <div class="detail-block">
+                        <div class="detail-icon ic-lav">📂</div>
+                        <div class="detail-text">
+                            <div class="detail-label">Sections</div>
+                            <div class="detail-value" id="detail-sections">Section A, B, C</div>
+                        </div>
+                    </div>
+
+                    <div class="detail-block">
+                        <div class="detail-icon ic-amber">⚠️</div>
+                        <div class="detail-text">
+                            <div class="detail-label">Allowed Violations</div>
+                            <div class="detail-value" id="detail-violations">1 Warning Max</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- ── QUESTION PAPER STATUS ── -->
+            <div class="section">
+                <div class="sec-label">Question Paper</div>
+                <div class="qp-loaded-block" id="qp-status-block">
+                    <div class="qp-icon" id="qp-icon">🔒</div>
+                    <div class="qp-text">
+                        <div class="qp-title" id="qp-title">Question paper securely loaded by your institution.</div>
+                        <div class="qp-sub" id="qp-sub">Your exam is ready. No action needed from you.</div>
+                    </div>
+                    <div class="qp-badge" id="qp-badge">✓ Ready</div>
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- ── 3. SYSTEM CHECK ── -->
+            <div class="section">
+                <div class="sec-label">System Check</div>
+                <div class="syscheck-list" id="syscheck-list">
+
+                    <div class="sys-row">
+                        <div class="sys-left">
+                            <span class="sys-icon">🌐</span>
+                            <span class="sys-name">Internet Connection</span>
+                        </div>
+                        <div class="sys-check" id="sys-internet">
+                            <div class="check-dot"></div>
+                            Checking…
+                        </div>
+                    </div>
+
+                    <div class="sys-row">
+                        <div class="sys-left">
+                            <span class="sys-icon">🖥</span>
+                            <span class="sys-name">Fullscreen Support</span>
+                        </div>
+                        <div class="sys-check" id="sys-fullscreen">
+                            <div class="check-dot"></div>
+                            Checking…
+                        </div>
+                    </div>
+
+                    <div class="sys-row">
+                        <div class="sys-left">
+                            <span class="sys-icon">🔊</span>
+                            <span class="sys-name">Audio Output</span>
+                        </div>
+                        <div class="sys-check" id="sys-audio">
+                            <div class="check-dot"></div>
+                            Checking…
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- ── 5. EXAM RULES ── -->
+            <div class="section">
+                <div class="sec-label">Before You Begin</div>
+                <div class="rules-list">
+
+                    <div class="rule-row">
+                        <div class="rule-icon">🔒</div>
+                        <div class="rule-text">Stay in <strong>fullscreen mode</strong> for the entire duration of the exam.</div>
+                    </div>
+
+                    <div class="rule-row">
+                        <div class="rule-icon">🗂</div>
+                        <div class="rule-text">Do <strong>not switch tabs</strong> or open other windows while the exam is running.</div>
+                    </div>
+
+                    <div class="rule-row">
+                        <div class="rule-icon">⚠️</div>
+                        <div class="rule-text" id="rule-violation-text">You are allowed <strong>1 warning</strong>. A second violation will automatically submit your exam.</div>
+                    </div>
+
+                    <div class="rule-row">
+                        <div class="rule-icon">⏱</div>
+                        <div class="rule-text">The <strong>timer starts</strong> the moment you click "Start Exam" and cannot be paused.</div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- ── 6. ACCESSIBILITY REMINDER ── -->
+            <div class="reminder-block">
+                <div class="reminder-glyph">🌸</div>
+                <div class="reminder-body">
+                    <div class="reminder-title">You've got this.</div>
+                    <div class="reminder-text">
+                        LEXORA is designed to help you focus and perform your best.
+                        Every question includes audio support and is broken down into clear, easy steps.
+                        There is no rush — work through each question at your own pace.
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── ACTIONS ── -->
+            <div class="actions-row" style="justify-content:center">
+                <button class="btn-start" onclick="transitionTo('Live_Exam.html')">
+                    Begin Exam
+                    <span class="start-arrow">→</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="ver-tag" style="display:none"></div>
+
+<script>
+    // Exam name
+    const examName = localStorage.getItem('lexora_exam_name');
+    if (examName) {
+        const el = document.getElementById('exam-title');
+        if (el) el.textContent = examName;
+    }
+
+    // Exam data
+    const raw = localStorage.getItem('lexora_exam');
+    if (raw) {
+        try {
+            const exam = JSON.parse(raw);
+            const qCount = exam.stats && exam.stats.questions_found;
+            if (qCount) {
+                document.getElementById('detail-questions').textContent = qCount + ' Questions';
+            }
+        } catch(e) {}
+    } else {
+        // No exam loaded — warn student
+        const block = document.getElementById('qp-status-block');
+        if (block) {
+            block.style.background = 'var(--rose-soft)';
+            block.style.borderColor = 'var(--rose)';
+        }
+        document.getElementById('qp-icon').textContent = '⚠️';
+        document.getElementById('qp-title').textContent = 'No question paper loaded yet.';
+        document.getElementById('qp-sub').textContent = 'Please ask your administrator to upload the exam paper.';
+        document.getElementById('qp-badge').textContent = '✗ Not ready';
+        document.getElementById('qp-badge').style.background = 'var(--rose)';
+    }
+
+    // ── Read admin config ────────────────────────────────────────────────
+    const configRaw = localStorage.getItem('lexora_config');
+    if (configRaw) {
+        try {
+            const config = JSON.parse(configRaw);
+
+            // Duration
+            const mins = config.duration_minutes || 120;
+            const h = Math.floor(mins / 60);
+            const m = mins % 60;
+            const durText = m === 0
+                ? h + ' Hour' + (h !== 1 ? 's' : '')
+                : h + 'h ' + m + 'm';
+            const durEl = document.getElementById('detail-duration');
+            if (durEl) durEl.textContent = durText;
+
+            // Sections
+            if (config.sections && config.sections.length) {
+                const secEl = document.getElementById('detail-sections');
+                if (secEl) secEl.textContent = config.sections.join(', ');
+            }
+
+            // Violation limit
+            const lim = config.violation_limit;
+            if (lim !== undefined) {
+                const vioEl = document.getElementById('detail-violations');
+                if (vioEl) {
+                    vioEl.textContent = lim === 0
+                        ? 'Zero Tolerance'
+                        : lim + ' Warning' + (lim !== 1 ? 's' : '') + ' Max';
+                }
+
+                const ruleEl = document.getElementById('rule-violation-text');
+                if (ruleEl) {
+                    if (lim === 0) {
+                        ruleEl.innerHTML = '<strong>Zero tolerance</strong> for tab switching. Any violation will automatically submit your exam.';
+                    } else {
+                        ruleEl.innerHTML = 'You are allowed <strong>' + lim + ' warning' + (lim !== 1 ? 's' : '') +
+                            '</strong>. Violation number ' + (lim + 1) + ' will automatically submit your exam.';
+                    }
+                }
+            }
+        } catch(e) {}
+    }
+
+    // Real system checks
+    function setCheck(id, ok, label) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.style.color = ok ? 'var(--sage)' : 'var(--rose)';
+        el.querySelector('.check-dot').style.background = ok ? 'var(--sage)' : 'var(--rose)';
+        el.childNodes[el.childNodes.length - 1].textContent = ' ' + label;
+    }
+
+    setCheck('sys-internet', navigator.onLine, navigator.onLine ? 'Connected' : 'Offline');
+    setCheck('sys-fullscreen', !!(document.fullscreenEnabled || document.webkitFullscreenEnabled), 'Supported');
+    setCheck('sys-audio', !!(window.AudioContext || window.webkitAudioContext), 'Available');
+</script>
+
+</body>
+</html>

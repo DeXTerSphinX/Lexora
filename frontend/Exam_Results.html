@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>LEXORA — Exam Results</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Fraunces:ital,wght@0,400;1,300&display=swap" rel="stylesheet"/>
+
+    <link rel="stylesheet" href="transitions.css" />
+    <script defer src="transitions.js"></script>
+
+    <style>
+        @font-face {
+            font-family: 'OpenDyslexic';
+            src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/OpenDyslexic-Regular.otf') format('opentype');
+            font-weight: 400;
+        }
+        @font-face {
+            font-family: 'OpenDyslexic';
+            src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/OpenDyslexic-Bold.otf') format('opentype');
+            font-weight: 700;
+        }
+
+        :root {
+            --bg:         #fdf7f0;
+            --surface:    #fff9f4;
+            --peach:      #f0a080;
+            --peach-soft: #fce8dc;
+            --peach-pale: #fff1ea;
+            --rose-soft:  #fddcdc;
+            --rose:       #f0a0a0;
+            --sage:       #84b8a4;
+            --sage-soft:  #d0ece4;
+            --lav:        #a89cd4;
+            --lav-soft:   #e4e0f4;
+            --amber:      #f0c060;
+            --amber-soft: #fef3d0;
+            --text:       #2e2218;
+            --text-mid:   #6b4e3c;
+            --text-muted: #a88878;
+            --border:     #ead8cc;
+            --radius:     22px;
+            --radius-sm:  12px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body, input, textarea, button, select {
+            font-family: 'OpenDyslexic', 'Nunito', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 32px 20px 60px;
+        }
+
+        /* ── Header ── */
+        .page-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+        .logo { font-family: 'Fraunces', serif; font-size: 1.6rem; letter-spacing: -0.5px; }
+        .logo span { color: var(--peach); }
+        .page-title {
+            font-size: 1.1rem; font-weight: 700; color: var(--text-mid);
+            margin-top: 6px;
+        }
+        .exam-name-tag {
+            display: inline-block; margin-top: 8px;
+            background: var(--peach-soft); border: 1px solid var(--peach);
+            color: #b85030; font-size: .72rem; font-weight: 700;
+            padding: 4px 14px; border-radius: 16px;
+        }
+
+        /* ── Glass card ── */
+        .glass-card {
+            max-width: 920px; width: 100%;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: 0 8px 40px rgba(160,100,60,.08);
+            overflow: hidden;
+        }
+        .card-accent {
+            height: 5px;
+            background: linear-gradient(90deg, var(--peach), var(--lav), var(--sage));
+        }
+        .card-body {
+            padding: 32px 36px;
+            display: flex; flex-direction: column; gap: 32px;
+        }
+
+        /* ── Section label ── */
+        .sec-label {
+            font-size: .63rem; font-weight: 700; letter-spacing: 1.2px;
+            text-transform: uppercase; color: var(--text-muted);
+            padding-bottom: 10px; border-bottom: 1px solid var(--border);
+            margin-bottom: 14px;
+        }
+
+        /* ── Summary cards ── */
+        .stat-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+        }
+        .stat-card {
+            background: var(--bg); border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm); padding: 18px 14px;
+            text-align: center;
+        }
+        .stat-value { font-size: 1.5rem; font-weight: 700; }
+        .stat-label {
+            font-size: .62rem; font-weight: 700; letter-spacing: .8px;
+            text-transform: uppercase; color: var(--text-muted); margin-top: 4px;
+        }
+        .stat-card.ic-peach .stat-value { color: #b85030; }
+        .stat-card.ic-sage  .stat-value { color: #2a6a50; }
+        .stat-card.ic-amber .stat-value { color: #7a4a00; }
+        .stat-card.ic-lav   .stat-value { color: #5040a0; }
+
+        /* ── Time bars ── */
+        .time-bars { display: flex; flex-direction: column; gap: 10px; }
+        .time-row { display: flex; align-items: center; gap: 12px; }
+        .time-label { font-size: .78rem; font-weight: 700; color: var(--text-mid); width: 36px; flex-shrink: 0; }
+        .time-track { flex: 1; height: 22px; background: var(--peach-pale); border-radius: 11px; overflow: hidden; }
+        .time-fill {
+            height: 100%; border-radius: 11px;
+            transition: width .8s cubic-bezier(.25,.8,.25,1);
+            min-width: 2px;
+        }
+        .time-fill.risk-low, .time-fill.risk-moderate { background: linear-gradient(90deg, var(--sage), var(--sage-soft)); }
+        .time-fill.risk-high { background: linear-gradient(90deg, var(--amber), var(--amber-soft)); }
+        .time-fill.risk-extreme { background: linear-gradient(90deg, var(--peach), #f4a898); }
+        .time-val { font-size: .72rem; font-weight: 600; color: var(--text-muted); width: 56px; text-align: right; flex-shrink: 0; }
+        .time-flag { font-size: .68rem; color: #7a4a00; margin-left: 4px; }
+
+        /* ── Complexity cards ── */
+        .cx-cards { display: flex; flex-direction: column; gap: 8px; }
+        .cx-card {
+            background: var(--bg); border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm); overflow: hidden;
+        }
+        .cx-header {
+            display: flex; align-items: center; gap: 10px;
+            padding: 12px 16px; cursor: pointer;
+            transition: background .15s;
+        }
+        .cx-header:hover { background: var(--peach-pale); }
+        .cx-qnum { font-size: .82rem; font-weight: 700; color: var(--text-mid); width: 32px; }
+        .cx-title { flex: 1; font-size: .78rem; font-weight: 600; color: var(--text-mid);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cx-risk {
+            font-size: .6rem; font-weight: 700; padding: 3px 10px;
+            border-radius: 10px; letter-spacing: .5px;
+        }
+        .cx-risk-low      { background: var(--sage-soft); color: #2a6a50; }
+        .cx-risk-moderate  { background: var(--lav-soft);  color: #5a4878; }
+        .cx-risk-high      { background: var(--amber-soft); color: #7a4a00; }
+        .cx-risk-extreme   { background: var(--peach-soft); color: #b85030; }
+        .cx-score { font-size: .78rem; font-weight: 700; color: var(--text-mid); width: 40px; text-align: right; }
+        .cx-chevron { font-size: .7rem; color: var(--text-muted); width: 16px; text-align: center; }
+        .cx-detail { padding: 0 16px 16px; display: none; }
+        .cx-detail.open { display: block; }
+        .cx-metrics { display: flex; flex-direction: column; gap: 10px; }
+        .cx-metric { display: flex; align-items: center; gap: 10px; }
+        .cx-metric-name { font-size: .72rem; font-weight: 600; color: var(--text-mid); width: 120px; flex-shrink: 0; }
+        .cx-meter { flex: 1; height: 10px; background: var(--border); border-radius: 5px; overflow: hidden; }
+        .cx-meter-fill { height: 100%; border-radius: 5px; transition: width .6s ease; }
+        .cx-fill-peach { background: var(--peach); }
+        .cx-fill-lav   { background: var(--lav); }
+        .cx-fill-amber { background: var(--amber); }
+        .cx-fill-sage  { background: var(--sage); }
+        .cx-metric-val { font-size: .72rem; font-weight: 700; color: var(--text-muted); width: 36px; text-align: right; }
+        .cx-keywords { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+        .cx-kw-label { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--text-muted); margin-right: 4px; }
+        .cx-kw-pill {
+            padding: 2px 9px; border-radius: 14px;
+            background: var(--peach-soft); border: 1px solid var(--peach);
+            font-size: .72rem; font-weight: 700; color: #b85030;
+        }
+
+        /* ── Complexity vs Time ── */
+        .cvt-legend { display: flex; gap: 16px; margin-bottom: 14px; }
+        .cvt-legend-item { display: flex; align-items: center; gap: 5px; font-size: .72rem; font-weight: 600; color: var(--text-mid); }
+        .cvt-dot { width: 10px; height: 10px; border-radius: 3px; }
+        .cvt-dot-lav  { background: var(--lav); }
+        .cvt-dot-peach { background: var(--peach); }
+        .cvt-rows { display: flex; flex-direction: column; gap: 12px; }
+        .cvt-row { display: flex; align-items: center; gap: 12px; }
+        .cvt-label { font-size: .78rem; font-weight: 700; color: var(--text-mid); width: 36px; flex-shrink: 0; }
+        .cvt-bars { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+        .cvt-bar { height: 12px; border-radius: 6px; transition: width .6s ease; min-width: 2px; }
+        .cvt-bar-cx { background: var(--lav); }
+        .cvt-bar-time { background: var(--peach); }
+        .cvt-tag {
+            font-size: .6rem; font-weight: 700; padding: 2px 8px;
+            border-radius: 8px; letter-spacing: .3px; flex-shrink: 0;
+        }
+        .cvt-struggled { background: var(--amber-soft); color: #7a4a00; }
+        .cvt-quick     { background: var(--sage-soft); color: #2a6a50; }
+        .cvt-expected  { background: var(--border); color: var(--text-muted); }
+
+        /* ── Engagement table ── */
+        .eng-table {
+            width: 100%; border-collapse: collapse;
+            border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+        .eng-table th {
+            background: var(--peach-pale); font-size: .6rem; font-weight: 700;
+            letter-spacing: .8px; text-transform: uppercase; color: var(--text-muted);
+            padding: 10px 12px; text-align: left;
+        }
+        .eng-table td {
+            padding: 10px 12px; font-size: .78rem; border-top: 1px solid var(--border);
+            color: var(--text-mid);
+        }
+        .eng-badge {
+            font-size: .6rem; font-weight: 700; padding: 2px 9px;
+            border-radius: 10px; display: inline-block;
+        }
+        .eng-answered { background: var(--sage-soft); color: #2a6a50; }
+        .eng-skipped  { background: var(--rose-soft); color: #b83040; }
+        .eng-flag-yes { color: #7a4a00; font-weight: 700; }
+
+        /* ── Footer ── */
+        .results-footer {
+            display: flex; gap: 12px; justify-content: center; padding-top: 8px;
+        }
+        .res-btn {
+            padding: 12px 28px; border-radius: 24px; border: 1.5px solid var(--border);
+            background: var(--surface); font-family: inherit; font-size: .82rem;
+            font-weight: 700; cursor: pointer; transition: all .2s; color: var(--text-mid);
+        }
+        .res-btn:hover { border-color: var(--peach); }
+        .res-btn-primary {
+            background: linear-gradient(135deg, #e07060, #f4a898);
+            border: none; color: #fff;
+            box-shadow: 0 4px 14px rgba(224,112,96,.3);
+        }
+        .res-btn-primary:hover { opacity: .9; }
+
+        /* ── No data ── */
+        .no-data {
+            text-align: center; padding: 60px 20px;
+            font-size: .92rem; color: var(--text-muted);
+        }
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        .ver-tag {
+            position: fixed; bottom: 12px; right: 16px;
+            background: rgba(46,34,24,.7); color: #fde8d8;
+            font-size: .62rem; font-weight: 700; padding: 4px 12px;
+            border-radius: 16px; z-index: 99; letter-spacing: .4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-header">
+    <div class="logo">LEX<span>ORA</span></div>
+    <div class="page-title">Exam Analytics</div>
+    <div class="exam-name-tag" id="exam-name-tag">Exam</div>
+</div>
+
+<div class="glass-card">
+    <div class="card-accent"></div>
+    <div class="card-body" id="results-body">
+        <p class="no-data">Loading analytics...</p>
+    </div>
+</div>
+
+<div class="ver-tag">LEXORA — Exam Results v1</div>
+
+<script>
+(function() {
+    const analyticsRaw = localStorage.getItem('lexora_analytics');
+    const examRaw = localStorage.getItem('lexora_exam');
+    const examName = localStorage.getItem('lexora_exam_name') || 'Exam';
+    const body = document.getElementById('results-body');
+
+    document.getElementById('exam-name-tag').textContent = examName;
+
+    if (!analyticsRaw) {
+        body.innerHTML = '<p class="no-data">No exam analytics found. Take an exam first, then come back here.</p>' +
+            '<div class="results-footer"><a href="PreExam_Dashboard.html" class="res-btn res-btn-primary">Go to Dashboard</a></div>';
+        return;
+    }
+
+    const analytics = JSON.parse(analyticsRaw);
+    const exam = examRaw ? JSON.parse(examRaw) : { units: [] };
+    const units = exam.units || [];
+
+    // Group units by question
+    const groups = {};
+    units.forEach(u => {
+        const m = u.id.match(/^(Q\d+)/);
+        if (!m) return;
+        const k = m[1];
+        if (!groups[k]) groups[k] = { units: [], header: null };
+        groups[k].units.push(u);
+        if (u.type === 'header') groups[k].header = u;
+    });
+    const qKeys = Object.keys(groups);
+
+    // ── Helpers ──
+    function fmt(ms) {
+        var s = Math.round(ms / 1000);
+        if (s < 60) return s + 's';
+        var m = Math.floor(s / 60);
+        s = s % 60;
+        return m + 'm ' + s + 's';
+    }
+    function esc(str) {
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // ── Aggregate complexity per question ──
+    function questionComplexity(qKey) {
+        var qUnits = (groups[qKey] || {}).units || [];
+        var allSent = [];
+        var maxRisk = 'LOW';
+        var riskOrder = { LOW: 0, MODERATE: 1, HIGH: 2, EXTREME: 3 };
+
+        qUnits.forEach(function(u) {
+            if (!u.complexity) return;
+            if (riskOrder[u.complexity.document.risk_band] > (riskOrder[maxRisk] || 0)) {
+                maxRisk = u.complexity.document.risk_band;
+            }
+            (u.complexity.sentences || []).forEach(function(s) { allSent.push(s); });
+        });
+
+        if (!allSent.length) return null;
+
+        function avg(key) { return allSent.reduce(function(s,x){ return s + x[key]; }, 0) / allSent.length; }
+        return {
+            sentence_norm: avg('sentence_norm'),
+            depth_norm: avg('depth_norm'),
+            lexical_norm: avg('lexical_norm'),
+            info_norm: avg('info_norm'),
+            composite_norm: avg('composite_norm'),
+            risk_band: maxRisk
+        };
+    }
+
+    // ── Build all keywords for a question ──
+    function questionKeywords(qKey) {
+        var kws = [];
+        ((groups[qKey] || {}).units || []).forEach(function(u) {
+            (u.keywords || []).forEach(function(w) {
+                if (kws.indexOf(w.toLowerCase()) === -1) kws.push(w.toLowerCase());
+            });
+        });
+        return kws.slice(0, 6);
+    }
+
+    // ── SECTION 1: Summary Cards ──
+    var qData = analytics.questions || {};
+    var answeredCount = 0, flaggedCount = 0;
+    qKeys.forEach(function(k) {
+        if (qData[k] && qData[k].answered) answeredCount++;
+        if (qData[k] && qData[k].flagged) flaggedCount++;
+    });
+
+    var html = '';
+    html += '<div><div class="sec-label">Summary</div>';
+    html += '<div class="stat-grid">';
+    html += '<div class="stat-card ic-peach"><div class="stat-value">' + fmt(analytics.global.total_time_ms || 0) + '</div><div class="stat-label">Total Time</div></div>';
+    html += '<div class="stat-card ic-sage"><div class="stat-value">' + answeredCount + ' / ' + qKeys.length + '</div><div class="stat-label">Answered</div></div>';
+    html += '<div class="stat-card ic-amber"><div class="stat-value">' + flaggedCount + '</div><div class="stat-label">Flagged</div></div>';
+    html += '<div class="stat-card ic-lav"><div class="stat-value">' + (analytics.global.total_tts_clicks || 0) + '</div><div class="stat-label">TTS Uses</div></div>';
+    html += '</div></div>';
+
+    // ── SECTION 2: Time Distribution ──
+    var maxTime = 1;
+    qKeys.forEach(function(k) { if (qData[k] && qData[k].time_spent_ms > maxTime) maxTime = qData[k].time_spent_ms; });
+
+    html += '<div><div class="sec-label">Time Per Question</div>';
+    html += '<div class="time-bars">';
+    qKeys.forEach(function(k) {
+        var d = qData[k] || {};
+        var t = d.time_spent_ms || 0;
+        var pct = Math.round(t / maxTime * 100);
+        var num = k.replace('Q','');
+        var cx = questionComplexity(k);
+        var riskCls = cx ? 'risk-' + cx.risk_band.toLowerCase() : 'risk-low';
+        var flagStr = d.flagged ? ' <span class="time-flag">&#9873;</span>' : '';
+        html += '<div class="time-row">';
+        html += '<div class="time-label">Q' + num + '</div>';
+        html += '<div class="time-track"><div class="time-fill ' + riskCls + '" style="width:' + pct + '%"></div></div>';
+        html += '<div class="time-val">' + fmt(t) + flagStr + '</div>';
+        html += '</div>';
+    });
+    html += '</div></div>';
+
+    // ── SECTION 3: Per-Question Complexity Breakdown ──
+    html += '<div><div class="sec-label">Complexity Breakdown</div>';
+    html += '<div class="cx-cards">';
+    qKeys.forEach(function(k, idx) {
+        var num = k.replace('Q','');
+        var cx = questionComplexity(k);
+        var header = (groups[k].header && (groups[k].header.modified || groups[k].header.original)) || 'Question ' + num;
+        var short = header.length > 40 ? header.slice(0,40) + '...' : header;
+        var kws = questionKeywords(k);
+
+        html += '<div class="cx-card">';
+        html += '<div class="cx-header" onclick="toggleCx(this)">';
+        html += '<div class="cx-qnum">Q' + num + '</div>';
+        html += '<div class="cx-title">' + esc(short) + '</div>';
+
+        if (cx) {
+            html += '<div class="cx-risk cx-risk-' + cx.risk_band.toLowerCase() + '">' + cx.risk_band + '</div>';
+            html += '<div class="cx-score">' + cx.composite_norm.toFixed(2) + '</div>';
+        } else {
+            html += '<div class="cx-risk cx-risk-low">N/A</div>';
+            html += '<div class="cx-score">—</div>';
+        }
+        html += '<div class="cx-chevron">&#9660;</div>';
+        html += '</div>';
+
+        html += '<div class="cx-detail">';
+        if (cx) {
+            html += '<div class="cx-metrics">';
+            var metrics = [
+                { name: 'Sentence Length', val: cx.sentence_norm, cls: 'cx-fill-peach' },
+                { name: 'Dep. Depth', val: cx.depth_norm, cls: 'cx-fill-lav' },
+                { name: 'Lexical Difficulty', val: cx.lexical_norm, cls: 'cx-fill-amber' },
+                { name: 'Info Density', val: cx.info_norm, cls: 'cx-fill-sage' }
+            ];
+            metrics.forEach(function(m) {
+                var pct = Math.min(100, Math.round(m.val * 100));
+                html += '<div class="cx-metric">';
+                html += '<div class="cx-metric-name">' + m.name + '</div>';
+                html += '<div class="cx-meter"><div class="cx-meter-fill ' + m.cls + '" style="width:' + pct + '%"></div></div>';
+                html += '<div class="cx-metric-val">' + m.val.toFixed(2) + '</div>';
+                html += '</div>';
+            });
+            html += '</div>';
+
+            if (kws.length) {
+                html += '<div class="cx-keywords"><span class="cx-kw-label">Hard words:</span>';
+                kws.forEach(function(w) { html += '<span class="cx-kw-pill">' + esc(w) + '</span>'; });
+                html += '</div>';
+            }
+        } else {
+            html += '<div style="font-size:.78rem;color:var(--text-muted)">No complexity data available for this question.</div>';
+        }
+        html += '</div></div>';
+    });
+    html += '</div></div>';
+
+    // ── SECTION 4: Complexity vs Time ──
+    html += '<div><div class="sec-label">Complexity vs. Time Spent</div>';
+    html += '<div class="cvt-legend">';
+    html += '<span class="cvt-legend-item"><span class="cvt-dot cvt-dot-lav"></span> Complexity</span>';
+    html += '<span class="cvt-legend-item"><span class="cvt-dot cvt-dot-peach"></span> Time Spent</span>';
+    html += '</div>';
+    html += '<div class="cvt-rows">';
+
+    // Compute rankings for insight tags
+    var cxValues = [], timeValues = [];
+    qKeys.forEach(function(k) {
+        var cx = questionComplexity(k);
+        cxValues.push({ key: k, val: cx ? cx.composite_norm : 0 });
+        timeValues.push({ key: k, val: (qData[k] || {}).time_spent_ms || 0 });
+    });
+    // Sort descending to get ranks
+    var cxSorted  = cxValues.slice().sort(function(a,b){ return b.val - a.val; });
+    var timeSorted = timeValues.slice().sort(function(a,b){ return b.val - a.val; });
+    var cxRank = {}, timeRank = {};
+    cxSorted.forEach(function(x,i)  { cxRank[x.key] = i; });
+    timeSorted.forEach(function(x,i) { timeRank[x.key] = i; });
+
+    var maxCx = Math.max.apply(null, cxValues.map(function(x){ return x.val; })) || 1;
+
+    qKeys.forEach(function(k) {
+        var num = k.replace('Q','');
+        var cx = questionComplexity(k);
+        var t = (qData[k] || {}).time_spent_ms || 0;
+        var cxPct = cx ? Math.round(cx.composite_norm / maxCx * 100) : 0;
+        var tPct = Math.round(t / maxTime * 100);
+
+        var diff = (timeRank[k] || 0) - (cxRank[k] || 0);
+        var tagCls = 'cvt-expected', tagText = 'Expected';
+        if (diff < -1) { tagCls = 'cvt-struggled'; tagText = 'Struggled'; }
+        else if (diff > 1) { tagCls = 'cvt-quick'; tagText = 'Quick'; }
+
+        html += '<div class="cvt-row">';
+        html += '<div class="cvt-label">Q' + num + '</div>';
+        html += '<div class="cvt-bars">';
+        html += '<div class="cvt-bar cvt-bar-cx" style="width:' + cxPct + '%"></div>';
+        html += '<div class="cvt-bar cvt-bar-time" style="width:' + tPct + '%"></div>';
+        html += '</div>';
+        html += '<div class="cvt-tag ' + tagCls + '">' + tagText + '</div>';
+        html += '</div>';
+    });
+    html += '</div></div>';
+
+    // ── SECTION 5: Engagement Table ──
+    html += '<div><div class="sec-label">Engagement Details</div>';
+    html += '<table class="eng-table"><thead><tr>';
+    html += '<th>Question</th><th>Status</th><th>Revisions</th><th>TTS</th><th>Visits</th><th>Flagged</th>';
+    html += '</tr></thead><tbody>';
+
+    qKeys.forEach(function(k) {
+        var num = k.replace('Q','');
+        var d = qData[k] || {};
+        var statusCls = d.answered ? 'eng-answered' : 'eng-skipped';
+        var statusText = d.answered ? 'Answered' : 'Skipped';
+
+        html += '<tr>';
+        html += '<td><strong>Q' + num + '</strong></td>';
+        html += '<td><span class="eng-badge ' + statusCls + '">' + statusText + '</span></td>';
+        html += '<td>' + (d.revision_count || 0) + '</td>';
+        html += '<td>' + (d.tts_count || 0) + '</td>';
+        html += '<td>' + (d.visits || 0) + '</td>';
+        html += '<td>' + (d.flagged ? '<span class="eng-flag-yes">Yes</span>' : 'No') + '</td>';
+        html += '</tr>';
+    });
+
+    html += '</tbody></table></div>';
+
+    // ── Footer ──
+    html += '<div class="results-footer">';
+    html += '<button class="res-btn" onclick="clearAndReturn()">Clear Data</button>';
+    html += '<a href="PreExam_Dashboard.html" class="res-btn res-btn-primary">Back to Dashboard</a>';
+    html += '</div>';
+
+    body.innerHTML = html;
+
+    // Animate bars in on load
+    setTimeout(function() {
+        document.querySelectorAll('.time-fill, .cx-meter-fill, .cvt-bar').forEach(function(el) {
+            el.style.width = el.style.width; // trigger reflow
+        });
+    }, 100);
+})();
+
+// ── Toggle complexity detail ──
+function toggleCx(header) {
+    var detail = header.nextElementSibling;
+    var chevron = header.querySelector('.cx-chevron');
+    if (detail.classList.contains('open')) {
+        detail.classList.remove('open');
+        chevron.innerHTML = '&#9660;';
+    } else {
+        detail.classList.add('open');
+        chevron.innerHTML = '&#9650;';
+    }
+}
+
+// ── Clear analytics and return ──
+function clearAndReturn() {
+    ['lexora_analytics', 'lexora_exam', 'lexora_exam_name', 'lexora_config'].forEach(function(k) {
+        try { localStorage.removeItem(k); } catch(e) {}
+    });
+    window.location.href = 'PreExam_Dashboard.html';
+}
+</script>
+
+</body>
+</html>
