@@ -1,0 +1,6 @@
+requirements.txt
+core/
+api/
+*.py
+*.db
+__pycache__/

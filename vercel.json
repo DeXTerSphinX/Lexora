@@ -1,0 +1,8 @@
+{
+  "buildCommand": "node frontend/inject-config.js",
+  "outputDirectory": "frontend",
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/Login.html" }
+  ]
+}
